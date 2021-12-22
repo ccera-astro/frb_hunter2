@@ -84,7 +84,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '128'
+    value: '64'
   states:
     bus_sink: false
     bus_source: false
