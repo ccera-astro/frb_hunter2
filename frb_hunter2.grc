@@ -484,7 +484,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 508.0]
+    coordinate: [1328, 484.0]
     rotation: 0
     state: true
 - name: freq
@@ -617,7 +617,7 @@ blocks:
     bb_gain7: '20'
     bb_gain8: '20'
     bb_gain9: '20'
-    bw0: '0'
+    bw0: 0.8*samp_rate
     bw1: '0'
     bw10: '0'
     bw11: '0'
