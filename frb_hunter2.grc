@@ -80,18 +80,6 @@ blocks:
     coordinate: [1672, 508.0]
     rotation: 0
     state: true
-- name: fftsize
-  id: variable
-  parameters:
-    comment: ''
-    value: '64'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [424, 76.0]
-    rotation: 0
-    state: true
 - name: harvest_pacer
   id: variable_function_probe
   parameters:
@@ -444,6 +432,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [672, 324.0]
+    rotation: 0
+    state: true
+- name: fftsize
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: FFT size
+    short_id: ''
+    type: intx
+    value: '32'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 572.0]
     rotation: 0
     state: true
 - name: frb_buf_mgr
