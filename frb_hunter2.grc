@@ -56,18 +56,6 @@ blocks:
     coordinate: [1072, 476.0]
     rotation: 0
     state: true
-- name: crate
-  id: variable
-  parameters:
-    comment: ''
-    value: '4000'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [608, 76.0]
-    rotation: 0
-    state: true
 - name: cur_file
   id: variable
   parameters:
@@ -377,6 +365,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [2160, 84.0]
+    rotation: 0
+    state: true
+- name: crate
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Channel Rate
+    short_id: ''
+    type: intx
+    value: '2500'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [880, 572.0]
     rotation: 0
     state: true
 - name: decln
