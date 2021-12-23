@@ -30,7 +30,7 @@ def cur_sidereal(longitude):
     sidt = "%02d,%02d,%02d" % (hours, minutes, seconds)
     return (sidt)
 
-def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix):
+def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix,decln):
     global recently_triggered
     global events
     if (trig_val > 0):
@@ -47,6 +47,7 @@ def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix):
             fp.write("%04d%02d%02d,%02d,%02d,%05.3f," % (ltp.tm_year,
                 ltp.tm_mon, ltp.tm_mday, ltp.tm_hour, ltp.tm_min, float(ltp.tm_sec)+frac))
             fp.write("%02d,%02d,%02d\n" % (int(sidbits[0]), int(sidbits[1]), int(sidbits[2])))
+            fp.write("%6.2f\n" % decln)
             fp.close()
             
             #
