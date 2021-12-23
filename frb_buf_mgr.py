@@ -30,10 +30,10 @@ def cur_sidereal(longitude):
     sidt = "%02d,%02d,%02d" % (hours, minutes, seconds)
     return (sidt)
 
-def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix,decln):
+def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix,decln,thresh):
     global recently_triggered
     global events
-    if (trig_val > 0):
+    if (trig_val > thresh):
         if (recently_triggered <= 0):
             evt = time.time()
             ltp = time.gmtime(evt)
