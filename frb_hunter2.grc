@@ -48,7 +48,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: frb_buf_mgr.save_frb_spectra(trigger_probe,cur_file,fftsize,longitude,prefix,decln,treshold)
+    value: frb_buf_mgr.save_frb_spectra(trigger_probe,cur_file,fftsize,longitude,prefix,decln,threshold)
   states:
     bus_sink: false
     bus_source: false
