@@ -36,7 +36,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 2**(int(np.log2(crate/10))+1)
+    value: 2**(int(np.log2(crate/20))+1)
   states:
     bus_sink: false
     bus_source: false
@@ -48,7 +48,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: frb_buf_mgr.save_frb_spectra(trigger_probe,cur_file,fftsize,longitude,prefix,decln,threshold)
+    value: frb_buf_mgr.save_frb_spectra(trigger_probe,cur_file,fftsize,longitude,prefix,decln,threshold,freq,samp_rate,crate)
   states:
     bus_sink: false
     bus_source: false
@@ -131,7 +131,7 @@ blocks:
     comment: ''
     function_args: ''
     function_name: level
-    poll_rate: '30'
+    poll_rate: '40'
     value: '0'
   states:
     bus_sink: false
@@ -445,51 +445,58 @@ blocks:
     comment: ''
     source_code: "# this module will be imported in the into your flowgraph\nimport\
       \ os\nimport ephem\nimport time\nimport numpy as np\nimport shutil\nimport glob\n\
-      import copy\nimport shutil\n\nrecently_triggered = 0\nevents = []\ndef cur_sidereal(longitude):\n\
-      \    longstr = \"%02d\" % int(longitude)\n    longstr = longstr + \":\"\n  \
-      \  longitude = abs(longitude)\n    frac = longitude - int(longitude)\n    frac\
-      \ *= 60\n    mins = int(frac)\n    longstr += \"%02d\" % mins\n    longstr +=\
-      \ \":00\"\n    x = ephem.Observer()\n    x.date = ephem.now()\n    x.long =\
-      \ longstr\n    jdate = ephem.julian_date(x)\n    tokens=str(x.sidereal_time()).split(\"\
-      :\")\n    hours=int(tokens[0])\n    minutes=int(tokens[1])\n    seconds=int(float(tokens[2]))\n\
-      \    sidt = \"%02d,%02d,%02d\" % (hours, minutes, seconds)\n    return (sidt)\n\
-      \ndef save_frb_spectra(trig_val, fn,fftsize,longitude,prefix,decln,thresh):\n\
-      \    global recently_triggered\n    global events\n    if (trig_val > thresh):\n\
-      \        if (recently_triggered <= 0):\n            evt = time.time()\n    \
-      \        ltp = time.gmtime(evt)\n            frac = evt-float(int(evt))\n  \
-      \          events.append(int(time.time()))\n            newfn = \"frb-event-%d\"\
-      \ % int(time.time())\n            sidt = cur_sidereal(longitude)\n         \
-      \   sidbits = sidt.split(\",\")\n            newfn += \".csv\"\n           \
-      \ fp = open (prefix+newfn, \"w\")\n            fp.write(\"%04d%02d%02d,%02d,%02d,%05.3f,\"\
-      \ % (ltp.tm_year,\n                ltp.tm_mon, ltp.tm_mday, ltp.tm_hour, ltp.tm_min,\
-      \ float(ltp.tm_sec)+frac))\n            fp.write(\"%02d,%02d,%02d\\n\" % (int(sidbits[0]),\
-      \ int(sidbits[1]), int(sidbits[2])))\n            fp.write(\"%6.2f\\n\" % decln)\n\
-      \            fp.close()\n            \n            #\n            # Prevent\
-      \ re-triggering immediately\n            #\n            recently_triggered =\
-      \ 240\n        else:\n            recently_triggered -= 1\n        \n    return\
-      \ True\n\ndef harvest(pacer,prefix,permdir):\n    global events\n    flist =\
-      \ glob.glob(prefix+\"frb-buffer-*\")\n    myevents = copy.deepcopy(events)\n\
-      \    \n    #\n    # Harvest data that isn't associated with an event\n    #\n\
-      \    for f in flist:\n        ts = f.replace(prefix+\"frb-buffer-\", \"\")\n\
-      \        ts = int(ts)\n        \n        #\n        # Time-indicator on file\
-      \ shows it is in the events list\n        #\n        if (ts in myevents or ts+1\
-      \ in myevents or ts-1 in myevents):\n            continue\n        \n      \
-      \  #\n        # File cannot be removed unless it isn't in \"myevents\" AND it\
-      \ hasn't\n        #  been touched in 5 seconds or more\n        #\n        sts\
-      \ = os.stat(f)\n        if ((time.time() - sts.st_mtime) > 5):\n           \
-      \ os.remove(f)\n    #\n    # Anything that has survived the above gauntlet and\
-      \ is older than 10 seconds\n    #  likely deserves to be preserved as \"event\
-      \ data\"\n    #\n    for f in flist:\n        if (os.path.exists(f)):\n    \
-      \        sts = os.stat(f)\n            if ((time.time() - sts.st_mtime) > 10):\n\
-      \                ts = f.replace(prefix+\"frb-buffer-\", \"\")\n            \
-      \    ts = int(ts)\n                \n                #\n                # Confirm\
-      \ in event data\n                #\n                if (ts in myevents or ts+1\
-      \ in myevents or ts-1 in myevents):\n                    f2 = f.replace(\"buffer\"\
-      , \"evdata\")\n                    f2 += \".bin\"\n                    shutil.move(f,permdir+os.path.basename(f2))\n\
-      \                    f2 = f.replace(\"frb-buffer-\", \"frb-event-\")\n     \
-      \               f2 += \".csv\"\n                    if (os.path.exists(f2)):\n\
-      \                        shutil.move(f2, permdir+os.path.basename(f2))\n   \
-      \             \n    return True\n    \n    \n    \n"
+      import copy\nimport shutil\nimport json\n\nrecently_triggered = 0\nevents =\
+      \ []\ndef cur_sidereal(longitude):\n    longstr = \"%02d\" % int(longitude)\n\
+      \    longstr = longstr + \":\"\n    longitude = abs(longitude)\n    frac = longitude\
+      \ - int(longitude)\n    frac *= 60\n    mins = int(frac)\n    longstr += \"\
+      %02d\" % mins\n    longstr += \":00\"\n    x = ephem.Observer()\n    x.date\
+      \ = ephem.now()\n    x.long = longstr\n    jdate = ephem.julian_date(x)\n  \
+      \  tokens=str(x.sidereal_time()).split(\":\")\n    hours=int(tokens[0])\n  \
+      \  minutes=int(tokens[1])\n    seconds=int(float(tokens[2]))\n    sidt = \"\
+      %02d,%02d,%02d\" % (hours, minutes, seconds)\n    return (sidt)\n\ndef save_frb_spectra(trig_val,\
+      \ fn,fftsize,longitude,prefix,decln,thresh,freq,bw,crate):\n    global recently_triggered\n\
+      \    global events\n    if (trig_val > thresh):\n        if (recently_triggered\
+      \ <= 0):\n            evt = time.time()\n            ltp = time.gmtime(evt)\n\
+      \            frac = evt-float(int(evt))\n            events.append(int(evt))\n\
+      \            newfn = \"frb-event-%d\" % (int(evt))\n            sidt = cur_sidereal(longitude)\n\
+      \            sidbits = sidt.split(\",\")\n            newfn += \".json\"\n \
+      \           evdict = {}\n            evdict[\"year\"] = ltp.tm_year\n      \
+      \      evdict[\"month\"] = ltp.tm_mon\n            evdict[\"day\"] = ltp.tm_mday\n\
+      \            evdict[\"hour\"] = ltp.tm_hour\n            evdict[\"minute\"]\
+      \ = ltp.tm_min\n            evdict[\"second\"] = ltp.tm_sec\n            evdict[\"\
+      lmst_hour\"] = int(sidbits[0])\n            evdict[\"lmst_minute\"] = int(sidbits[1])\n\
+      \            evdict[\"lmst_second\"] = int(sidbits[2])\n            evdict[\"\
+      frequency\"] = freq\n            evdict[\"bandwidth\"] = bw\n            evdict[\"\
+      chan_rate\"] = crate\n            evdict[\"declination\"] = decln\n        \
+      \    evdict[\"fftsize\"] = fftsize\n            evdict[\"threshold\"] = thresh\n\
+      \            fp = open (prefix+newfn, \"w\")\n            fp.write(json.dumps(evdict,\
+      \ indent=4))\n            fp.write(\"\\n\")\n            fp.close()\n      \
+      \      \n            #\n            # Prevent re-triggering immediately\n  \
+      \          #\n            recently_triggered = 240\n        else:\n        \
+      \    recently_triggered -= 1\n        \n    return True\n\ndef harvest(pacer,prefix,permdir):\n\
+      \    global events\n    flist = glob.glob(prefix+\"frb-buffer-*\")\n    myevents\
+      \ = copy.deepcopy(events)\n    \n    #\n    # Harvest data that isn't associated\
+      \ with an event\n    #\n    for f in flist:\n        ts = f.replace(prefix+\"\
+      frb-buffer-\", \"\")\n        ts = int(ts)\n        \n        #\n        # Time-indicator\
+      \ on file shows it is in the events list\n        #\n        if (ts in myevents\
+      \ or ts+1 in myevents or ts-1 in myevents):\n            continue\n        \n\
+      \        #\n        # File cannot be removed unless it isn't in \"myevents\"\
+      \ AND it hasn't\n        #  been touched in 5 seconds or more\n        #\n \
+      \       sts = os.stat(f)\n        if ((time.time() - sts.st_mtime) > 5):\n \
+      \           os.remove(f)\n    #\n    # Anything that has survived the above\
+      \ gauntlet and is older than 10 seconds\n    #  likely deserves to be preserved\
+      \ as \"event data\"\n    #\n    for f in flist:\n        if (os.path.exists(f)):\n\
+      \            sts = os.stat(f)\n            if ((time.time() - sts.st_mtime)\
+      \ > 10):\n                ts = f.replace(prefix+\"frb-buffer-\", \"\")\n   \
+      \             ts = int(ts)\n                \n                #\n          \
+      \      # Confirm in event data\n                #\n                if (ts in\
+      \ myevents or ts+1 in myevents or ts-1 in myevents):\n                    f2\
+      \ = f.replace(\"buffer\", \"evdata\")\n                    f2 += \".bin\"\n\
+      \                    shutil.move(f,permdir+os.path.basename(f2))\n         \
+      \           f2 = f.replace(\"frb-buffer-\", \"frb-event-\")\n              \
+      \      f2 += \".json\"\n                    if (os.path.exists(f2)):\n     \
+      \                   shutil.move(f2, permdir+os.path.basename(f2))\n        \
+      \        \n    return True\n    \n    \n    \n"
   states:
     bus_sink: false
     bus_source: false

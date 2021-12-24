@@ -7,6 +7,7 @@ import shutil
 import glob
 import copy
 import shutil
+import json
 
 recently_triggered = 0
 events = []
@@ -30,7 +31,7 @@ def cur_sidereal(longitude):
     sidt = "%02d,%02d,%02d" % (hours, minutes, seconds)
     return (sidt)
 
-def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix,decln,thresh):
+def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix,decln,thresh,freq,bw,crate):
     global recently_triggered
     global events
     if (trig_val > thresh):
@@ -38,16 +39,30 @@ def save_frb_spectra(trig_val, fn,fftsize,longitude,prefix,decln,thresh):
             evt = time.time()
             ltp = time.gmtime(evt)
             frac = evt-float(int(evt))
-            events.append(int(time.time()))
-            newfn = "frb-event-%d" % int(time.time())
+            events.append(int(evt))
+            newfn = "frb-event-%d" % (int(evt))
             sidt = cur_sidereal(longitude)
             sidbits = sidt.split(",")
-            newfn += ".csv"
+            newfn += ".json"
+            evdict = {}
+            evdict["year"] = ltp.tm_year
+            evdict["month"] = ltp.tm_mon
+            evdict["day"] = ltp.tm_mday
+            evdict["hour"] = ltp.tm_hour
+            evdict["minute"] = ltp.tm_min
+            evdict["second"] = ltp.tm_sec
+            evdict["lmst_hour"] = int(sidbits[0])
+            evdict["lmst_minute"] = int(sidbits[1])
+            evdict["lmst_second"] = int(sidbits[2])
+            evdict["frequency"] = freq
+            evdict["bandwidth"] = bw
+            evdict["chan_rate"] = crate
+            evdict["declination"] = decln
+            evdict["fftsize"] = fftsize
+            evdict["threshold"] = thresh
             fp = open (prefix+newfn, "w")
-            fp.write("%04d%02d%02d,%02d,%02d,%05.3f," % (ltp.tm_year,
-                ltp.tm_mon, ltp.tm_mday, ltp.tm_hour, ltp.tm_min, float(ltp.tm_sec)+frac))
-            fp.write("%02d,%02d,%02d\n" % (int(sidbits[0]), int(sidbits[1]), int(sidbits[2])))
-            fp.write("%6.2f\n" % decln)
+            fp.write(json.dumps(evdict, indent=4))
+            fp.write("\n")
             fp.close()
             
             #
@@ -103,7 +118,7 @@ def harvest(pacer,prefix,permdir):
                     f2 += ".bin"
                     shutil.move(f,permdir+os.path.basename(f2))
                     f2 = f.replace("frb-buffer-", "frb-event-")
-                    f2 += ".csv"
+                    f2 += ".json"
                     if (os.path.exists(f2)):
                         shutil.move(f2, permdir+os.path.basename(f2))
                 
