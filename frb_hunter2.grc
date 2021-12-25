@@ -439,7 +439,8 @@ blocks:
       \ threshold AND\n        #   it isn't \"too large\", then declare an event.\n\
       \        #\n        # If it's \"too large\", it VERY likely isn't of astronomical\
       \ origin.\n        #\n        if mx > self.threshold and mx < 100.0:\n     \
-      \       self.holdoff = self.crate * 2\n            offs = np.argmax(input_items[0])\n\
+      \       self.holdoff = self.crate * 2\n            \n            #\n       \
+      \     # Compute offset time of event\n            #\n            offs = np.argmax(input_items[0])\n\
       \            offs = len(input_items[0]) - offs\n            offs *= self.crate\n\
       \            \n            self.record_event(self.prefix,self.longitude,self.decln,\n\
       \                self.fftsize,self.evptr,self.freq,self.srate,self.crate,self.threshold,offs)\n\
