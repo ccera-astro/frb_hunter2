@@ -319,7 +319,7 @@ blocks:
     hide: none
     label: Declination
     short_id: ''
-    type: eng_float
+    type: str
     value: '-99.0'
   states:
     bus_sink: false
@@ -390,33 +390,37 @@ blocks:
       \ GRC will instantiate the first class it finds\nto get ports and parameters\
       \ of your block. The arguments to __init__  will\nbe the parameters. All of\
       \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\nimport ephem\nimport time\nimport json\n\n\n\nclass\
-      \ blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block\n\
-      \    \"\"\"Embedded Python Block example - a simple multiply const\"\"\"\n\n\
-      \    def __init__(self, crate=2500, threshold=10.0, prefix=\"./\", longitude=-76.03,\
-      \ decln=-99.0,fftsize=32,evptr=None,freq=1420.405e6,srate=10e6):  # only default\
-      \ arguments here\n        \"\"\"arguments to this function show up as parameters\
-      \ in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n       \
-      \     name='FRB analyser block',   # will show up in GRC\n            in_sig=[np.float32],\n\
-      \            out_sig=None\n        )\n        # if an attribute with the same\
-      \ name as a parameter is found,\n        # a callback is registered (properties\
-      \ work, too).\n        self.crate = crate\n        self.threshold = threshold\n\
-      \        self.prefix = prefix\n        self.holdoff = 0\n        self.longitude\
-      \ = longitude\n        self.decln = decln\n        self.fftsize = fftsize\n\
-      \        self.evptr = evptr\n        self.freq = freq\n        self.srate =\
-      \ srate\n        \n    def cur_sidereal(self,longitude):\n        longstr =\
-      \ \"%02d\" % int(longitude)\n        longstr = longstr + \":\"\n        longitude\
-      \ = abs(longitude)\n        frac = longitude - int(longitude)\n        frac\
-      \ *= 60\n        mins = int(frac)\n        longstr += \"%02d\" % mins\n    \
-      \    longstr += \":00\"\n        x = ephem.Observer()\n        x.date = ephem.now()\n\
-      \        x.long = longstr\n        jdate = ephem.julian_date(x)\n        tokens=str(x.sidereal_time()).split(\"\
+      from gnuradio import gr\nimport ephem\nimport time\nimport json\nimport os\n\
+      \n\n\nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
+      \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
+      \ const\"\"\"\n\n    def __init__(self, crate=2500, threshold=10.0, prefix=\"\
+      ./\", longitude=-76.03, decln=-99.0,fftsize=32,evptr=None,freq=1420.405e6,srate=10e6):\
+      \  # only default arguments here\n        \"\"\"arguments to this function show\
+      \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
+      \   self,\n            name='FRB analyser block',   # will show up in GRC\n\
+      \            in_sig=[np.float32],\n            out_sig=None\n        )\n   \
+      \     # if an attribute with the same name as a parameter is found,\n      \
+      \  # a callback is registered (properties work, too).\n        self.crate =\
+      \ crate\n        self.threshold = threshold\n        self.prefix = prefix\n\
+      \        self.holdoff = self.crate*2\n        self.longitude = longitude\n \
+      \       self.decln = decln\n        self.fftsize = fftsize\n        self.evptr\
+      \ = evptr\n        self.freq = freq\n        self.srate = srate\n        \n\
+      \    def cur_sidereal(self,longitude):\n        longstr = \"%02d\" % int(longitude)\n\
+      \        longstr = longstr + \":\"\n        longitude = abs(longitude)\n   \
+      \     frac = longitude - int(longitude)\n        frac *= 60\n        mins =\
+      \ int(frac)\n        longstr += \"%02d\" % mins\n        longstr += \":00\"\n\
+      \        x = ephem.Observer()\n        x.date = ephem.now()\n        x.long\
+      \ = longstr\n        jdate = ephem.julian_date(x)\n        tokens=str(x.sidereal_time()).split(\"\
       :\")\n        hours=int(tokens[0])\n        minutes=int(tokens[1])\n       \
       \ seconds=int(float(tokens[2]))\n        sidt = \"%02d,%02d,%02d\" % (hours,\
       \ minutes, seconds)\n        return (sidt)\n    \n    def record_event(self,prefix,longit,decln,fftsize,evptr,freq,srate,crate,thresh,offs):\n\
       \        evt = time.time()\n        evt -= offs\n        ltp = time.gmtime(evt)\n\
       \        frac = evt-float(int(evt))\n        \n        if (evptr != None):\n\
-      \            evptr(int(evt))\n\n        newfn = \"frb-event-%d\" % (int(evt))\n\
-      \        sidt = self.cur_sidereal(longit)\n        sidbits = sidt.split(\",\"\
+      \            evptr(int(evt))\n            \n        if (os.path.exists(decln)):\n\
+      \            fp = open(decln, \"r\")\n            x = fp.readline()\n      \
+      \      decln = float(x)\n            fp.close()\n        else:\n           \
+      \ decln = float(decln)\n\n        newfn = \"frb-event-%d\" % (int(evt))\n  \
+      \      sidt = self.cur_sidereal(longit)\n        sidbits = sidt.split(\",\"\
       )\n        newfn += \".json\"\n        evdict = {}\n        evdict[\"year\"\
       ] = ltp.tm_year\n        evdict[\"month\"] = ltp.tm_mon\n        evdict[\"day\"\
       ] = ltp.tm_mday\n        evdict[\"hour\"] = ltp.tm_hour\n        evdict[\"minute\"\
