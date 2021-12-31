@@ -1026,7 +1026,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    alpha: 1.0/crate*2.0
+    alpha: 1.0/(crate*5.0)
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
