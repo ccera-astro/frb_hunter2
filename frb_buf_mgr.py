@@ -9,68 +9,77 @@ import copy
 import shutil
 import json
 
-def ts_file(pacer,ts,prefix):
-    fn = prefix + "ts-" + "%d" % (int(ts)) + ".txt"
-    fp = open(fn, "w")
-    fp.write ("%.2f\n" % ts)
-    fp.close()
-    return True
+#
+# Helper to produce a vector that is mostly zeros, but with 1s in the middle 10%
+#
+def tp_vector(fftsize):
+    rvec = [0.0]*fftsize
+    mid = int(fftsize/2)
+    tenp = float(fftsize)*0.1
+    tenp = int(tenp)
+    fivep = int(tenp/2)
+    for ndx in range(mid-fivep,mid+fivep+1):
+        rvec[ndx] = 1.0
+    return rvec
 
-recently_triggered = 0
-events = []
-
-def add_event(event):
-	global events
-	events.append(event)
-
-def harvest(pacer,prefix,permdir):
-    global events
-    flist = glob.glob(prefix+"frb-buffer-*")
-    myevents = copy.deepcopy(events)
-    
+def harvest(pacer,prefix,permdir,seconds):
     #
     # Harvest data that isn't associated with an event
     #
+    
+    #
+    # First find "event" files in the buffer directory
+    #
+    flist = glob.glob(prefix+"frb-event-*")
+    
+    #
+    # Create empty event dictionary
+    #
+    evdict = {}
     for f in flist:
-        ts = f.replace(prefix+"frb-buffer-", "")
-        ts = int(ts)
-        
-        #
-        # Time-indicator on file shows it is in the events list
-        #
-        if (ts in myevents or ts+1 in myevents or ts-1 in myevents):
-            continue
-        
-        #
-        # File cannot be removed unless it isn't in "myevents" AND it hasn't
-        #  been touched in 5 seconds or more
-        #
         sts = os.stat(f)
-        if ((time.time() - sts.st_mtime) > 5):
+        #
+        # Add event only if it's "fresh"
+        #
+        if ((time.time() - sts.st_mtime) <= seconds*10):
+            evdict[f] = sts.st_mtime
+        
+        #
+        # Otherwise, remove
+        #
+        else:
             os.remove(f)
+            
     #
-    # Anything that has survived the above gauntlet and is older than 10 seconds
-    #  likely deserves to be preserved as "event data"
+    # Find matching buffer file
+    #
+    flist = glob.glob(prefix+"frb-buffer-*")
+    for f in flist:
+        sts = os.stat(f)
+        
+        #
+        # We have a buffer file, see if there's a matching "event" file
+        #
+        for ev in evdict:
+            #
+            # If the event falls within the purview of the buffer file
+            #
+            if sts.st_mtime > evdict[ev] and (sts.st_mtime-seconds) < evdict[ev]:
+                #
+                # Move them to perm directory
+                #
+                shutil.move(ev,permdir)
+                shutil.move(f,permdir)
+    
+    #
+    # Delete buffers that are old enough and didn't match any events
     #
     for f in flist:
-        if (os.path.exists(f)):
+        if os.path.exists(f):
             sts = os.stat(f)
-            if ((time.time() - sts.st_mtime) > 10):
-                ts = f.replace(prefix+"frb-buffer-", "")
-                ts = int(ts)
-                
-                #
-                # Confirm in event data
-                #
-                if (ts in myevents or ts+1 in myevents or ts-1 in myevents):
-                    f2 = f.replace("buffer", "evdata")
-                    f2 += ".bin"
-                    shutil.move(f,permdir+os.path.basename(f2))
-                    f2 = f.replace("frb-buffer-", "frb-event-")
-                    f2 += ".json"
-                    if (os.path.exists(f2)):
-                        shutil.move(f2, permdir+os.path.basename(f2))
-                
+            if ((time.time() - sts.st_mtime) > seconds*10):
+                os.remove(f)        
+        
     return True
     
     

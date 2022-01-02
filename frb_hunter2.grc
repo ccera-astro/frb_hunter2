@@ -53,7 +53,19 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1672, 508.0]
+    coordinate: [2072, 628.0]
+    rotation: 0
+    state: true
+- name: fileseconds
+  id: variable
+  parameters:
+    comment: ''
+    value: '10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1984, 452.0]
     rotation: 0
     state: true
 - name: harvest_pacer
@@ -63,7 +75,7 @@ blocks:
     comment: ''
     function_args: ''
     function_name: level
-    poll_rate: 1.0/15.0
+    poll_rate: 1.0/30.0
     value: '0'
   states:
     bus_sink: false
@@ -76,12 +88,12 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: frb_buf_mgr.harvest(harvest_pacer,prefix,permdir)
+    value: frb_buf_mgr.harvest(harvest_pacer,prefix,permdir,fileseconds)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1168, 476.0]
+    coordinate: [1992, 532.0]
     rotation: 0
     state: true
 - name: pacer_probe
@@ -91,7 +103,7 @@ blocks:
     comment: ''
     function_args: ''
     function_name: level
-    poll_rate: '1'
+    poll_rate: 1/fileseconds
     value: '0'
   states:
     bus_sink: false
@@ -121,7 +133,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1848, 508.0]
+    coordinate: [2136, 540.0]
     rotation: 0
     state: true
 - name: anal_probe
@@ -159,7 +171,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'This will produce a ratio between the long-term
+
+      average, and the "spikier" realtime signal.'
     maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '2'
@@ -187,7 +201,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2048, 340.0]
+    coordinate: [2456, 548.0]
     rotation: 0
     state: true
 - name: blocks_integrate_xx_0
@@ -224,6 +238,29 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1368, 356.0]
+    rotation: 0
+    state: true
+- name: blocks_multiply_const_vxx_0
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'We arrange to only look at the middle 10% of
+
+      the bandwidth, to reduce smearing effects.
+
+
+      This *should* work for very bright FRBs.'
+    const: frb_buf_mgr.tp_vector(fftsize)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: fftsize
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1048, 148.0]
     rotation: 0
     state: true
 - name: blocks_stream_to_vector_1
@@ -362,7 +399,7 @@ blocks:
       \n\n\nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
       \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
       \ const\"\"\"\n\n    def __init__(self, crate=2500, threshold=10.0, prefix=\"\
-      ./\", longitude=-76.03, decln=-99.0,fftsize=32,evptr=None,freq=1420.405e6,srate=10e6):\
+      ./\", longitude=-76.03, decln=-99.0,fftsize=32,freq=1420.405e6,srate=10e6):\
       \  # only default arguments here\n        \"\"\"arguments to this function show\
       \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
       \   self,\n            name='FRB analyser block',   # will show up in GRC\n\
@@ -371,20 +408,19 @@ blocks:
       \  # a callback is registered (properties work, too).\n        self.crate =\
       \ crate\n        self.threshold = threshold\n        self.prefix = prefix\n\
       \        self.holdoff = self.crate*2\n        self.longitude = longitude\n \
-      \       self.decln = decln\n        self.fftsize = fftsize\n        self.evptr\
-      \ = evptr\n        self.freq = freq\n        self.srate = srate\n        \n\
-      \    def cur_sidereal(self,longitude):\n        longstr = \"%02d\" % int(longitude)\n\
-      \        longstr = longstr + \":\"\n        longitude = abs(longitude)\n   \
-      \     frac = longitude - int(longitude)\n        frac *= 60\n        mins =\
-      \ int(frac)\n        longstr += \"%02d\" % mins\n        longstr += \":00\"\n\
-      \        x = ephem.Observer()\n        x.date = ephem.now()\n        x.long\
-      \ = longstr\n        jdate = ephem.julian_date(x)\n        tokens=str(x.sidereal_time()).split(\"\
-      :\")\n        hours=int(tokens[0])\n        minutes=int(tokens[1])\n       \
-      \ seconds=int(float(tokens[2]))\n        sidt = \"%02d,%02d,%02d\" % (hours,\
-      \ minutes, seconds)\n        return (sidt)\n    \n    def record_event(self,prefix,longit,decln,fftsize,evptr,freq,srate,crate,thresh,offs):\n\
+      \       self.decln = decln\n        self.fftsize = fftsize\n        self.freq\
+      \ = freq\n        self.srate = srate\n        \n    def cur_sidereal(self,longitude):\n\
+      \        longstr = \"%02d\" % int(longitude)\n        longstr = longstr + \"\
+      :\"\n        longitude = abs(longitude)\n        frac = longitude - int(longitude)\n\
+      \        frac *= 60\n        mins = int(frac)\n        longstr += \"%02d\" %\
+      \ mins\n        longstr += \":00\"\n        x = ephem.Observer()\n        x.date\
+      \ = ephem.now()\n        x.long = longstr\n        jdate = ephem.julian_date(x)\n\
+      \        tokens=str(x.sidereal_time()).split(\":\")\n        hours=int(tokens[0])\n\
+      \        minutes=int(tokens[1])\n        seconds=int(float(tokens[2]))\n   \
+      \     sidt = \"%02d,%02d,%02d\" % (hours, minutes, seconds)\n        return\
+      \ (sidt)\n    \n    def record_event(self,prefix,longit,decln,fftsize,freq,srate,crate,thresh,offs):\n\
       \        evt = time.time()\n        evt -= offs\n        ltp = time.gmtime(evt)\n\
-      \        frac = evt-float(int(evt))\n        \n        if (evptr != None):\n\
-      \            evptr(int(evt))\n            \n        if (os.path.exists(decln)):\n\
+      \        frac = evt-float(int(evt))\n        \n            \n        if (os.path.exists(decln)):\n\
       \            fp = open(decln, \"r\")\n            x = fp.readline()\n      \
       \      decln = float(x)\n            fp.close()\n        else:\n           \
       \ decln = float(decln)\n\n        newfn = \"frb-event-%d\" % (int(evt))\n  \
@@ -422,7 +458,6 @@ blocks:
     comment: ''
     crate: crate
     decln: decln
-    evptr: frb_buf_mgr.add_event
     fftsize: fftsize
     freq: freq
     longitude: longitude
@@ -434,10 +469,9 @@ blocks:
   states:
     _io_cache: ('FRB analyser block', 'blk', [('crate', '2500'), ('threshold', '10.0'),
       ('prefix', "'./'"), ('longitude', '-76.03'), ('decln', '-99.0'), ('fftsize',
-      '32'), ('evptr', 'None'), ('freq', '1420405000.0'), ('srate', '10000000.0')],
-      [('0', 'float', 1)], [], 'Embedded Python Block example - a simple multiply
-      const', ['crate', 'decln', 'evptr', 'fftsize', 'freq', 'longitude', 'prefix',
-      'srate', 'threshold'])
+      '32'), ('freq', '1420405000.0'), ('srate', '10000000.0')], [('0', 'float', 1)],
+      [], 'Embedded Python Block example - a simple multiply const', ['crate', 'decln',
+      'fftsize', 'freq', 'longitude', 'prefix', 'srate', 'threshold'])
     bus_sink: false
     bus_source: false
     bus_structure: null
@@ -451,38 +485,37 @@ blocks:
     comment: ''
     source_code: "# this module will be imported in the into your flowgraph\nimport\
       \ os\nimport ephem\nimport time\nimport numpy as np\nimport shutil\nimport glob\n\
-      import copy\nimport shutil\nimport json\n\ndef ts_file(pacer,ts,prefix):\n \
-      \   fn = prefix + \"ts-\" + \"%d\" % (int(ts)) + \".txt\"\n    fp = open(fn,\
-      \ \"w\")\n    fp.write (\"%.2f\\n\" % ts)\n    fp.close()\n    return True\n\
-      \nrecently_triggered = 0\nevents = []\n\ndef add_event(event):\n\tglobal events\n\
-      \tevents.append(event)\n\ndef harvest(pacer,prefix,permdir):\n    global events\n\
-      \    flist = glob.glob(prefix+\"frb-buffer-*\")\n    myevents = copy.deepcopy(events)\n\
-      \    \n    #\n    # Harvest data that isn't associated with an event\n    #\n\
-      \    for f in flist:\n        ts = f.replace(prefix+\"frb-buffer-\", \"\")\n\
-      \        ts = int(ts)\n        \n        #\n        # Time-indicator on file\
-      \ shows it is in the events list\n        #\n        if (ts in myevents or ts+1\
-      \ in myevents or ts-1 in myevents):\n            continue\n        \n      \
-      \  #\n        # File cannot be removed unless it isn't in \"myevents\" AND it\
-      \ hasn't\n        #  been touched in 5 seconds or more\n        #\n        sts\
-      \ = os.stat(f)\n        if ((time.time() - sts.st_mtime) > 5):\n           \
-      \ os.remove(f)\n    #\n    # Anything that has survived the above gauntlet and\
-      \ is older than 10 seconds\n    #  likely deserves to be preserved as \"event\
-      \ data\"\n    #\n    for f in flist:\n        if (os.path.exists(f)):\n    \
-      \        sts = os.stat(f)\n            if ((time.time() - sts.st_mtime) > 10):\n\
-      \                ts = f.replace(prefix+\"frb-buffer-\", \"\")\n            \
-      \    ts = int(ts)\n                \n                #\n                # Confirm\
-      \ in event data\n                #\n                if (ts in myevents or ts+1\
-      \ in myevents or ts-1 in myevents):\n                    f2 = f.replace(\"buffer\"\
-      , \"evdata\")\n                    f2 += \".bin\"\n                    shutil.move(f,permdir+os.path.basename(f2))\n\
-      \                    f2 = f.replace(\"frb-buffer-\", \"frb-event-\")\n     \
-      \               f2 += \".json\"\n                    if (os.path.exists(f2)):\n\
-      \                        shutil.move(f2, permdir+os.path.basename(f2))\n   \
-      \             \n    return True\n    \n    \n    \n"
+      import copy\nimport shutil\nimport json\n\n#\n# Helper to produce a vector that\
+      \ is mostly zeros, but with 1s in the middle 10%\n#\ndef tp_vector(fftsize):\n\
+      \    rvec = [0.0]*fftsize\n    mid = int(fftsize/2)\n    tenp = float(fftsize)*0.1\n\
+      \    tenp = int(tenp)\n    fivep = int(tenp/2)\n    for ndx in range(mid-fivep,mid+fivep+1):\n\
+      \        rvec[ndx] = 1.0\n    return rvec\n\ndef harvest(pacer,prefix,permdir,seconds):\n\
+      \    #\n    # Harvest data that isn't associated with an event\n    #\n    \n\
+      \    #\n    # First find \"event\" files in the buffer directory\n    #\n  \
+      \  flist = glob.glob(prefix+\"frb-event-*\")\n    \n    #\n    # Create empty\
+      \ event dictionary\n    #\n    evdict = {}\n    for f in flist:\n        sts\
+      \ = os.stat(f)\n        #\n        # Add event only if it's \"fresh\"\n    \
+      \    #\n        if ((time.time() - sts.st_mtime) <= seconds*10):\n         \
+      \   evdict[f] = sts.st_mtime\n        \n        #\n        # Otherwise, remove\n\
+      \        #\n        else:\n            os.remove(f)\n            \n    #\n \
+      \   # Find matching buffer file\n    #\n    flist = glob.glob(prefix+\"frb-buffer-*\"\
+      )\n    for f in flist:\n        sts = os.stat(f)\n        \n        #\n    \
+      \    # We have a buffer file, see if there's a matching \"event\" file\n   \
+      \     #\n        for ev in evdict:\n            #\n            # If the event\
+      \ falls within the purview of the buffer file\n            #\n            if\
+      \ sts.st_mtime > evdict[ev] and (sts.st_mtime-seconds) < evdict[ev]:\n     \
+      \           #\n                # Move them to perm directory\n             \
+      \   #\n                shutil.move(ev,permdir)\n                shutil.move(f,permdir)\n\
+      \    \n    #\n    # Delete buffers that are old enough and didn't match any\
+      \ events\n    #\n    for f in flist:\n        if os.path.exists(f):\n      \
+      \      sts = os.stat(f)\n            if ((time.time() - sts.st_mtime) > seconds*10):\n\
+      \                os.remove(f)        \n        \n    return True\n    \n   \
+      \ \n    \n"
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1952, 516.0]
+    coordinate: [2128, 476.0]
     rotation: 0
     state: true
 - name: freq
@@ -543,6 +576,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [624, 476.0]
+    rotation: 0
+    state: true
+- name: note_0
+  id: note
+  parameters:
+    alias: ''
+    comment: 'FFT output is a vector
+
+      total power is the sum of each element
+
+      of the vector.'
+    note: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1440, 140.0]
     rotation: 0
     state: true
 - name: osmosdr_source_0
@@ -977,7 +1027,7 @@ blocks:
     affinity: ''
     alias: ''
     alpha: 1.0/(crate*5.0)
-    comment: ''
+    comment: Longer-term average to establish baseline
     maxoutbuf: '0'
     minoutbuf: '0'
     type: float
@@ -986,7 +1036,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1680, 196.0]
+    coordinate: [1720, 196.0]
     rotation: 0
     state: true
 - name: srate
@@ -1046,7 +1096,20 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1024, 68.0]
+    coordinate: [904, 68.0]
+    rotation: 0
+    state: true
+- name: virtual_source_0_0
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: integ_fft
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2256, 572.0]
     rotation: 0
     state: true
 
@@ -1056,15 +1119,16 @@ connections:
 - [blocks_divide_xx_0, '0', frb_analyser1, '0']
 - [blocks_integrate_xx_0, '0', blocks_divide_xx_0, '0']
 - [blocks_integrate_xx_0, '0', single_pole_iir_filter_xx_2, '0']
-- [blocks_keep_one_in_n_1, '0', blocks_file_sink_0, '0']
 - [blocks_keep_one_in_n_1, '0', virtual_sink_0, '0']
+- [blocks_multiply_const_vxx_0, '0', blocks_vector_to_stream_0, '0']
 - [blocks_stream_to_vector_1, '0', fft_vxx_0, '0']
 - [blocks_vector_to_stream_0, '0', blocks_integrate_xx_0, '0']
 - [fft_vxx_0, '0', blocks_complex_to_mag_squared_1, '0']
 - [osmosdr_source_0, '0', blocks_stream_to_vector_1, '0']
 - [single_pole_iir_filter_xx_1, '0', blocks_keep_one_in_n_1, '0']
 - [single_pole_iir_filter_xx_2, '0', blocks_divide_xx_0, '1']
-- [virtual_source_0, '0', blocks_vector_to_stream_0, '0']
+- [virtual_source_0, '0', blocks_multiply_const_vxx_0, '0']
+- [virtual_source_0_0, '0', blocks_file_sink_0, '0']
 
 metadata:
   file_format: 1
