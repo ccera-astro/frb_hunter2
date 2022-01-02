@@ -488,35 +488,44 @@ blocks:
     comment: ''
     source_code: "# this module will be imported in the into your flowgraph\nimport\
       \ os\nimport ephem\nimport time\nimport numpy as np\nimport shutil\nimport glob\n\
-      import copy\nimport shutil\nimport json\n\n#\n# Helper to produce a vector that\
-      \ is mostly zeros, but with 1s in the middle 10%\n#\ndef tp_vector(fftsize):\n\
+      import copy\nimport shutil\nimport json\n\nmovelist = []\n\n#\n# Helper to produce\
+      \ a vector that is mostly zeros, but with 1s in the middle 10%\n#\ndef tp_vector(fftsize):\n\
       \    rvec = [0.0]*fftsize\n    mid = int(fftsize/2)\n    tenp = float(fftsize)*0.1\n\
       \    tenp = int(tenp)\n    fivep = int(tenp/2)\n    for ndx in range(mid-fivep,mid+fivep+1):\n\
       \        rvec[ndx] = 1.0\n    return rvec\n\ndef harvest(pacer,prefix,permdir,seconds):\n\
-      \    #\n    # Harvest data that isn't associated with an event\n    #\n    \n\
-      \    #\n    # First find \"event\" files in the buffer directory\n    #\n  \
-      \  flist = glob.glob(prefix+\"frb-event-*\")\n    \n    #\n    # Create empty\
-      \ event dictionary\n    #\n    evdict = {}\n    for f in flist:\n        sts\
-      \ = os.stat(f)\n        #\n        # Add event only if it's \"fresh\"\n    \
-      \    #\n        if ((time.time() - sts.st_mtime) <= seconds*10):\n         \
-      \   evdict[f] = sts.st_mtime\n        \n        #\n        # Otherwise, remove\n\
-      \        #\n        else:\n            os.remove(f)\n            \n    #\n \
-      \   # Find matching buffer file\n    #\n    flist = glob.glob(prefix+\"frb-buffer-*\"\
-      )\n    for f in flist:\n        sts = os.stat(f)\n        \n        #\n    \
-      \    # We have a buffer file, see if there's a matching \"event\" file\n   \
-      \     #\n        for ev in evdict:\n            #\n            # If the event\
-      \ falls within the purview of the buffer file\n            #\n            if\
-      \ sts.st_mtime > evdict[ev] and (sts.st_mtime-seconds) < evdict[ev]:\n     \
-      \           #\n                # Move them to perm directory\n             \
-      \   #\n                shutil.move(ev,permdir)\n                shutil.move(f,permdir)\n\
-      \    \n    #\n    # Delete buffers that are old enough and didn't match any\
-      \ events\n    #\n    for f in flist:\n        if os.path.exists(f):\n      \
-      \      sts = os.stat(f)\n            if ((time.time() - sts.st_mtime) > seconds*10):\n\
-      \                os.remove(f)        \n        \n    return True\n    \n\ndef\
-      \ compute_crate(fftsize,srate):\n    rates = [x for x in range(4200,2500,-25)]\n\
-      \    \n    for r in rates:\n        d = float(srate)/float(fftsize)\n      \
-      \  d /= float(r)\n        \n        if (d == float(int(d))):\n            return\
-      \ r\n    return 2500\n\n    \n"
+      \    global movelist\n    \n    #\n    # Handle files on the \"movelist\"\n\
+      \    #\n    for f in movelist:\n        shutil.move(f,permdir)\n    \n    movelist\
+      \ = []\n    \n    #\n    # Harvest data that isn't associated with an event\n\
+      \    #\n    \n    #\n    # First find \"event\" files in the buffer directory\n\
+      \    #\n    flist = glob.glob(prefix+\"frb-event-*\")\n    \n    #\n    # Create\
+      \ empty event dictionary\n    #\n    evdict = {}\n    for f in flist:\n    \
+      \    sts = os.stat(f)\n        #\n        # Add event only if it's \"fresh\"\
+      \n        #\n        if ((time.time() - sts.st_mtime) <= seconds*10):\n    \
+      \        evdict[f] = sts.st_mtime\n        \n        #\n        # Otherwise,\
+      \ remove\n        #\n        else:\n            os.remove(f)\n            \n\
+      \    #\n    # Find matching buffer file\n    #\n    flist = glob.glob(prefix+\"\
+      frb-buffer-*\")\n    for f in flist:\n        sts = os.stat(f)\n        \n \
+      \       #\n        # We have a buffer file, see if there's a matching \"event\"\
+      \ file\n        #\n        for ev in evdict:\n            #\n            # If\
+      \ the event falls within the purview of the buffer file\n            #\n   \
+      \         if sts.st_mtime > evdict[ev] and (sts.st_mtime-seconds) < evdict[ev]:\n\
+      \                #\n                # Move event file to perm directory\n  \
+      \              #\n                try:\n                    shutil.move(ev,permdir)\n\
+      \                except:\n                    pass\n                \n     \
+      \           if ((time.time() - sts.st_mtime) > seconds):\n                 \
+      \   try:\n                        shutil.move(f,permdir)\n                 \
+      \   except:\n                        pass\n                else:\n         \
+      \           #\n                    # Defer buffer movement to next cycle--buffer\
+      \ may be partially-full\n                    #\n                    movelist.append(f)\n\
+      \                \n    \n    #\n    # Delete buffers that are old enough and\
+      \ didn't match any events\n    #\n    for f in flist:\n        if (f not in\
+      \ movelist):\n            if os.path.exists(f):\n                sts = os.stat(f)\n\
+      \                if ((time.time() - sts.st_mtime) > seconds*10):\n         \
+      \           os.remove(f)        \n        \n    return True\n    \n\ndef compute_crate(fftsize,srate):\n\
+      \    rates = [x for x in range(4200,2500,-25)]\n    \n    for r in rates:\n\
+      \        d = float(srate)/float(fftsize)\n        d /= float(r)\n        \n\
+      \        if (d == float(int(d))):\n            return r\n    return 2500\n\n\
+      \    \n"
   states:
     bus_sink: false
     bus_source: false

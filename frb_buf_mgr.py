@@ -9,6 +9,8 @@ import copy
 import shutil
 import json
 
+movelist = []
+
 #
 # Helper to produce a vector that is mostly zeros, but with 1s in the middle 10%
 #
@@ -23,6 +25,16 @@ def tp_vector(fftsize):
     return rvec
 
 def harvest(pacer,prefix,permdir,seconds):
+    global movelist
+    
+    #
+    # Handle files on the "movelist"
+    #
+    for f in movelist:
+        shutil.move(f,permdir)
+    
+    movelist = []
+    
     #
     # Harvest data that isn't associated with an event
     #
@@ -66,19 +78,34 @@ def harvest(pacer,prefix,permdir,seconds):
             #
             if sts.st_mtime > evdict[ev] and (sts.st_mtime-seconds) < evdict[ev]:
                 #
-                # Move them to perm directory
+                # Move event file to perm directory
                 #
-                shutil.move(ev,permdir)
-                shutil.move(f,permdir)
+                try:
+                    shutil.move(ev,permdir)
+                except:
+                    pass
+                
+                if ((time.time() - sts.st_mtime) > seconds):
+                    try:
+                        shutil.move(f,permdir)
+                    except:
+                        pass
+                else:
+                    #
+                    # Defer buffer movement to next cycle--buffer may be partially-full
+                    #
+                    movelist.append(f)
+                
     
     #
     # Delete buffers that are old enough and didn't match any events
     #
     for f in flist:
-        if os.path.exists(f):
-            sts = os.stat(f)
-            if ((time.time() - sts.st_mtime) > seconds*10):
-                os.remove(f)        
+        if (f not in movelist):
+            if os.path.exists(f):
+                sts = os.stat(f)
+                if ((time.time() - sts.st_mtime) > seconds*10):
+                    os.remove(f)        
         
     return True
     
