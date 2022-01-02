@@ -82,5 +82,16 @@ def harvest(pacer,prefix,permdir,seconds):
         
     return True
     
+
+def compute_crate(fftsize,srate):
+    rates = [x for x in range(4200,2500,-25)]
     
+    for r in rates:
+        d = float(srate)/float(fftsize)
+        d /= float(r)
+        
+        if (d == float(int(d))):
+            return r
+    return 2500
+
     

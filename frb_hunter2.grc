@@ -44,6 +44,26 @@ blocks:
     coordinate: [528, 76.0]
     rotation: 0
     state: true
+- name: crate
+  id: variable
+  parameters:
+    comment: 'This gets computed.
+
+      Basica strategy is to find
+
+      the largest rate <= 4000
+
+      that prdouces an integer
+
+      decimation.'
+    value: frb_buf_mgr.compute_crate(fftsize,samp_rate)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [952, 492.0]
+    rotation: 0
+    state: true
 - name: cur_file
   id: variable
   parameters:
@@ -299,23 +319,6 @@ blocks:
     coordinate: [1232, 76.0]
     rotation: 0
     state: true
-- name: crate
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: Channel Rate
-    short_id: ''
-    type: intx
-    value: '2500'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [880, 572.0]
-    rotation: 0
-    state: true
 - name: decln
   id: parameter
   parameters:
@@ -509,8 +512,11 @@ blocks:
       \    \n    #\n    # Delete buffers that are old enough and didn't match any\
       \ events\n    #\n    for f in flist:\n        if os.path.exists(f):\n      \
       \      sts = os.stat(f)\n            if ((time.time() - sts.st_mtime) > seconds*10):\n\
-      \                os.remove(f)        \n        \n    return True\n    \n   \
-      \ \n    \n"
+      \                os.remove(f)        \n        \n    return True\n    \n\ndef\
+      \ compute_crate(fftsize,srate):\n    rates = [x for x in range(4200,2500,-25)]\n\
+      \    \n    for r in rates:\n        d = float(srate)/float(fftsize)\n      \
+      \  d /= float(r)\n        \n        if (d == float(int(d))):\n            return\
+      \ r\n    return 2500\n\n    \n"
   states:
     bus_sink: false
     bus_source: false
