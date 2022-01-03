@@ -511,10 +511,11 @@ blocks:
       \ - self.seconds\n            mxa = np.argmax(input_items[0])\n            evt\
       \ = start + float(self.scount)/float(self.srate)\n            evt += float(mxa)\
       \ / float(self.srate)\n            fp = open (\"frb-event.dat\", \"w\")\n  \
-      \          ltp = time.gmtime(evt)\n            fp.write(\"%04d%02d%02d-%02d%02d%02d\
-      \ %.2f\\n\" % (ltp.tm_year, ltp.tm_mon,\n                ltp.tm_mday, ltp.tm_hour,\
-      \ ltp.tm_min, ltp.tm_sec, mx))\n            fp.close()\n        self.scount\
-      \ += l\n        return len(input_items[0])\n"
+      \          ltp = time.gmtime(evt)\n            frac = evt - float(int(evt))\n\
+      \            fp.write(\"%04d%02d%02d-%02d%02d%05.2f %.2f\\n\" % (ltp.tm_year,\
+      \ ltp.tm_mon,\n                ltp.tm_mday, ltp.tm_hour, ltp.tm_min, float(ltp.tm_sec)+frac,\
+      \ frac, mx))\n            fp.close()\n            self.holdoff = self.srate\
+      \ * 10\n        self.scount += l\n        return len(input_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
@@ -526,8 +527,8 @@ blocks:
     tstamp: os.stat(infile).st_mtime
   states:
     _io_cache: ('FRB Pulse Finder', 'blk', [('threshold', '4.0'), ('srate', '6250'),
-      ('tstamp', '1641238607.8983896'), ('seconds', '600')], [('0', 'float', 1)],
-      [], 'FRB Pulse finder - a simple multiply const', ['seconds', 'srate', 'threshold',
+      ('tstamp', '1641243295.250985'), ('seconds', '600')], [('0', 'float', 1)], [],
+      'FRB Pulse finder - a simple multiply const', ['seconds', 'srate', 'threshold',
       'tstamp'])
     bus_sink: false
     bus_source: false
