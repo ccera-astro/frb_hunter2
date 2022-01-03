@@ -64,74 +64,6 @@ blocks:
     coordinate: [952, 492.0]
     rotation: 0
     state: true
-- name: cur_file
-  id: variable
-  parameters:
-    comment: ''
-    value: prefix + "frb-buffer-%d" % (int(ts))
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2072, 628.0]
-    rotation: 0
-    state: true
-- name: fileseconds
-  id: variable
-  parameters:
-    comment: ''
-    value: '10'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1984, 452.0]
-    rotation: 0
-    state: true
-- name: harvest_pacer
-  id: variable_function_probe
-  parameters:
-    block_id: anal_probe
-    comment: ''
-    function_args: ''
-    function_name: level
-    poll_rate: 1.0/30.0
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2432, 404.0]
-    rotation: 0
-    state: true
-- name: harvest_status
-  id: variable
-  parameters:
-    comment: ''
-    value: frb_buf_mgr.harvest(harvest_pacer,prefix,permdir,fileseconds)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1992, 532.0]
-    rotation: 0
-    state: true
-- name: pacer_probe
-  id: variable_function_probe
-  parameters:
-    block_id: anal_probe
-    comment: ''
-    function_args: ''
-    function_name: level
-    poll_rate: 1/fileseconds
-    value: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2288, 404.0]
-    rotation: 0
-    state: true
 - name: samp_rate
   id: variable
   parameters:
@@ -144,30 +76,16 @@ blocks:
     coordinate: [280, 60.0]
     rotation: 0
     state: enabled
-- name: ts
+- name: wr_status
   id: variable
   parameters:
     comment: ''
-    value: time.time() + (0 * pacer_probe)
+    value: frb_buf_mgr.write_rate("frb_rate.txt", crate)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2136, 540.0]
-    rotation: 0
-    state: true
-- name: anal_probe
-  id: blocks_probe_signal_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    type: float
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2424, 108.0]
+    coordinate: [944, 644.0]
     rotation: 0
     state: true
 - name: blocks_complex_to_mag_squared_1
@@ -183,27 +101,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [928, 364.0]
-    rotation: 0
-    state: true
-- name: blocks_divide_xx_0
-  id: blocks_divide_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: 'This will produce a ratio between the long-term
-
-      average, and the "spikier" realtime signal.'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_inputs: '2'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1984, 104.0]
+    coordinate: [1256, 132.0]
     rotation: 0
     state: true
 - name: blocks_file_sink_0
@@ -213,7 +111,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: cur_file
+    file: prefix+"frb_tmp.dat"
     type: float
     unbuffered: 'True'
     vlen: fftsize
@@ -221,25 +119,25 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2456, 548.0]
+    coordinate: [1960, 396.0]
     rotation: 0
     state: true
-- name: blocks_integrate_xx_0
-  id: blocks_integrate_xx
+- name: blocks_head_0
+  id: blocks_head
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    decim: fftsize
     maxoutbuf: '0'
     minoutbuf: '0'
-    type: float
+    num_items: int(seconds*samp_rate)
+    type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1472, 68.0]
+    coordinate: [496, 228.0]
     rotation: 0
     state: true
 - name: blocks_keep_one_in_n_1
@@ -257,30 +155,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1368, 356.0]
-    rotation: 0
-    state: true
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: 'We arrange to only look at the middle 10% of
-
-      the bandwidth, to reduce smearing effects.
-
-
-      This *should* work for very bright FRBs.'
-    const: frb_buf_mgr.tp_vector(fftsize)
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    vlen: fftsize
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1048, 148.0]
+    coordinate: [1752, 124.0]
     rotation: 0
     state: true
 - name: blocks_stream_to_vector_1
@@ -298,25 +173,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 364.0]
-    rotation: 0
-    state: true
-- name: blocks_vector_to_stream_0
-  id: blocks_vector_to_stream
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    num_items: fftsize
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1232, 76.0]
+    coordinate: [736, 172.0]
     rotation: 0
     state: true
 - name: decln
@@ -371,7 +228,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 324.0]
+    coordinate: [984, 108.0]
     rotation: 0
     state: true
 - name: fftsize
@@ -383,102 +240,12 @@ blocks:
     label: FFT size
     short_id: ''
     type: intx
-    value: '32'
+    value: '16'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [768, 572.0]
-    rotation: 0
-    state: true
-- name: frb_analyser1
-  id: epy_block
-  parameters:
-    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
-      \ GRC will instantiate the first class it finds\nto get ports and parameters\
-      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
-      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\nimport ephem\nimport time\nimport json\nimport os\n\
-      \n\n\nclass blk(gr.sync_block):  # other base classes are basic_block, decim_block,\
-      \ interp_block\n    \"\"\"Embedded Python Block example - a simple multiply\
-      \ const\"\"\"\n\n    def __init__(self, crate=2500, threshold=10.0, prefix=\"\
-      ./\", longitude=-76.03, decln=-99.0,fftsize=32,freq=1420.405e6,srate=10e6):\
-      \  # only default arguments here\n        \"\"\"arguments to this function show\
-      \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
-      \   self,\n            name='FRB analyser block',   # will show up in GRC\n\
-      \            in_sig=[np.float32],\n            out_sig=None\n        )\n   \
-      \     # if an attribute with the same name as a parameter is found,\n      \
-      \  # a callback is registered (properties work, too).\n        self.crate =\
-      \ crate\n        self.threshold = threshold\n        self.prefix = prefix\n\
-      \        self.holdoff = self.crate*2\n        self.longitude = longitude\n \
-      \       self.decln = decln\n        self.fftsize = fftsize\n        self.freq\
-      \ = freq\n        self.srate = srate\n        \n    def cur_sidereal(self,longitude):\n\
-      \        longstr = \"%02d\" % int(longitude)\n        longstr = longstr + \"\
-      :\"\n        longitude = abs(longitude)\n        frac = longitude - int(longitude)\n\
-      \        frac *= 60\n        mins = int(frac)\n        longstr += \"%02d\" %\
-      \ mins\n        longstr += \":00\"\n        x = ephem.Observer()\n        x.date\
-      \ = ephem.now()\n        x.long = longstr\n        jdate = ephem.julian_date(x)\n\
-      \        tokens=str(x.sidereal_time()).split(\":\")\n        hours=int(tokens[0])\n\
-      \        minutes=int(tokens[1])\n        seconds=int(float(tokens[2]))\n   \
-      \     sidt = \"%02d,%02d,%02d\" % (hours, minutes, seconds)\n        return\
-      \ (sidt)\n    \n    def record_event(self,prefix,longit,decln,fftsize,freq,srate,crate,thresh,offs):\n\
-      \        evt = time.time()\n        evt -= offs\n        ltp = time.gmtime(evt)\n\
-      \        frac = evt-float(int(evt))\n        \n        if (os.path.exists(decln)):\n\
-      \            fp = open(decln, \"r\")\n            x = fp.readline()\n      \
-      \      decln = float(x)\n            fp.close()\n        else:\n           \
-      \ decln = float(decln)\n\n        newfn = \"frb-event-%d\" % (int(evt))\n  \
-      \      sidt = self.cur_sidereal(longit)\n        sidbits = sidt.split(\",\"\
-      )\n        newfn += \".json\"\n        evdict = {}\n        evdict[\"year\"\
-      ] = ltp.tm_year\n        evdict[\"month\"] = ltp.tm_mon\n        evdict[\"day\"\
-      ] = ltp.tm_mday\n        evdict[\"hour\"] = ltp.tm_hour\n        evdict[\"minute\"\
-      ] = ltp.tm_min\n        evdict[\"second\"] = \"%.2f\" % (float(ltp.tm_sec)+frac)\n\
-      \        evdict[\"lmst_hour\"] = int(sidbits[0])\n        evdict[\"lmst_minute\"\
-      ] = int(sidbits[1])\n        evdict[\"lmst_second\"] = int(sidbits[2])\n   \
-      \     evdict[\"frequency\"] = freq\n        evdict[\"bandwidth\"] = srate\n\
-      \        evdict[\"chan_rate\"] = crate\n        evdict[\"declination\"] = decln\n\
-      \        evdict[\"fftsize\"] = fftsize\n        evdict[\"threshold\"] = thresh\n\
-      \        fp = open (prefix+newfn, \"w\")\n        fp.write(json.dumps(evdict,\
-      \ indent=4))\n        fp.write(\"\\n\")\n        fp.close()\n        return\
-      \ True\n\n    def work(self, input_items, output_items):\n        \"\"\"Do something\
-      \ when signal exceeds threshold\"\"\"\n        \n        #\n        # If still\
-      \ in hold-off, do nothing, decrement hold-off counter\n        #\n        if\
-      \ (self.holdoff > 0):\n            l = len(input_items[0])\n            self.holdoff\
-      \ -= l\n            return l\n        \n        #\n        # Find the largest\
-      \ item, which is a *ratio* between the instantaneous signal\n        #   and\
-      \ the longer-term average\n        #\n        mx = np.max(input_items[0])\n\
-      \        \n        #\n        # If the highest value in the input buffer exceeds\
-      \ threshold AND\n        #   it isn't \"too large\", then declare an event.\n\
-      \        #\n        # If it's \"too large\", it VERY likely isn't of astronomical\
-      \ origin.\n        #\n        if mx > self.threshold and mx < 100.0:\n     \
-      \       self.holdoff = self.crate * 2\n            \n            #\n       \
-      \     # Compute offset time of event\n            #\n            offs = np.argmax(input_items[0])\n\
-      \            offs = len(input_items[0]) - offs\n            offs *= (1.0/float(self.crate))\n\
-      \            \n            self.record_event(self.prefix,self.longitude,self.decln,\n\
-      \                self.fftsize,self.freq,self.srate,self.crate,self.threshold,offs)\n\
-      \        \n        return len(input_items[0])\n"
-    affinity: ''
-    alias: ''
-    comment: ''
-    crate: crate
-    decln: decln
-    fftsize: fftsize
-    freq: freq
-    longitude: longitude
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    prefix: prefix
-    srate: samp_rate
-    threshold: threshold
-  states:
-    _io_cache: ('FRB analyser block', 'blk', [('crate', '2500'), ('threshold', '10.0'),
-      ('prefix', "'./'"), ('longitude', '-76.03'), ('decln', '-99.0'), ('fftsize',
-      '32'), ('freq', '1420405000.0'), ('srate', '10000000.0')], [('0', 'float', 1)],
-      [], 'Embedded Python Block example - a simple multiply const', ['crate', 'decln',
-      'fftsize', 'freq', 'longitude', 'prefix', 'srate', 'threshold'])
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2392, 180.0]
     rotation: 0
     state: true
 - name: frb_buf_mgr
@@ -521,18 +288,19 @@ blocks:
       \ didn't match any events\n    #\n    for f in flist:\n        if (f not in\
       \ movelist):\n            if os.path.exists(f):\n                sts = os.stat(f)\n\
       \                if ((time.time() - sts.st_mtime) > seconds*10):\n         \
-      \           os.remove(f)        \n        \n    return True\n    \n\ndef compute_crate(fftsize,srate):\n\
-      \    rates = [x for x in range(4200,2500,-25)]\n    \n    for r in rates:\n\
-      \        d = float(srate)/float(fftsize)\n        d /= float(r)\n        \n\
-      \        if (d == float(int(d))):\n            return r\n    return 2500\n\n\
-      \    \n"
+      \           os.remove(f)        \n        \n    return True\n\ndef write_rate(fn,\
+      \ rate):\n    fp = open(fn, \"w\")\n    fp.write(\"%d\\n\" % rate)\n    fp.close()\n\
+      \    return True\n\n\ndef compute_crate(fftsize,srate):\n    rates = [x for\
+      \ x in range(6500,2500,-25)]\n    \n    for r in rates:\n        d = float(srate)/float(fftsize)\n\
+      \        d /= float(r)\n        \n        if (d == float(int(d))):\n       \
+      \     return r\n    return 2500\n\n    \n"
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2128, 476.0]
+    coordinate: [1384, 540.0]
     rotation: 0
-    state: true
+    state: enabled
 - name: freq
   id: parameter
   parameters:
@@ -591,23 +359,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [624, 476.0]
-    rotation: 0
-    state: true
-- name: note_0
-  id: note
-  parameters:
-    alias: ''
-    comment: 'FFT output is a vector
-
-      total power is the sum of each element
-
-      of the vector.'
-    note: ''
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1440, 140.0]
     rotation: 0
     state: true
 - name: osmosdr_source_0
@@ -1018,6 +769,23 @@ blocks:
     coordinate: [384, 476.0]
     rotation: 0
     state: true
+- name: seconds
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Runtime seconds
+    short_id: ''
+    type: intx
+    value: '600'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [720, 676.0]
+    rotation: 0
+    state: true
 - name: single_pole_iir_filter_xx_1
   id: single_pole_iir_filter_xx
   parameters:
@@ -1033,25 +801,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 364.0]
-    rotation: 0
-    state: true
-- name: single_pole_iir_filter_xx_2
-  id: single_pole_iir_filter_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha: 1.0/(crate*5.0)
-    comment: Longer-term average to establish baseline
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1720, 196.0]
+    coordinate: [1528, 124.0]
     rotation: 0
     state: true
 - name: srate
@@ -1098,20 +848,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1560, 420.0]
-    rotation: 0
-    state: true
-- name: virtual_source_0
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: integ_fft
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [904, 68.0]
+    coordinate: [2016, 132.0]
     rotation: 0
     state: true
 - name: virtual_source_0_0
@@ -1124,25 +861,18 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2256, 572.0]
+    coordinate: [1752, 420.0]
     rotation: 0
     state: true
 
 connections:
 - [blocks_complex_to_mag_squared_1, '0', single_pole_iir_filter_xx_1, '0']
-- [blocks_divide_xx_0, '0', anal_probe, '0']
-- [blocks_divide_xx_0, '0', frb_analyser1, '0']
-- [blocks_integrate_xx_0, '0', blocks_divide_xx_0, '0']
-- [blocks_integrate_xx_0, '0', single_pole_iir_filter_xx_2, '0']
+- [blocks_head_0, '0', blocks_stream_to_vector_1, '0']
 - [blocks_keep_one_in_n_1, '0', virtual_sink_0, '0']
-- [blocks_multiply_const_vxx_0, '0', blocks_vector_to_stream_0, '0']
 - [blocks_stream_to_vector_1, '0', fft_vxx_0, '0']
-- [blocks_vector_to_stream_0, '0', blocks_integrate_xx_0, '0']
 - [fft_vxx_0, '0', blocks_complex_to_mag_squared_1, '0']
-- [osmosdr_source_0, '0', blocks_stream_to_vector_1, '0']
+- [osmosdr_source_0, '0', blocks_head_0, '0']
 - [single_pole_iir_filter_xx_1, '0', blocks_keep_one_in_n_1, '0']
-- [single_pole_iir_filter_xx_2, '0', blocks_divide_xx_0, '1']
-- [virtual_source_0, '0', blocks_multiply_const_vxx_0, '0']
 - [virtual_source_0_0, '0', blocks_file_sink_0, '0']
 
 metadata:

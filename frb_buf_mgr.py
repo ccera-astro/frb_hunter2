@@ -108,10 +108,16 @@ def harvest(pacer,prefix,permdir,seconds):
                     os.remove(f)        
         
     return True
-    
+
+def write_rate(fn, rate):
+    fp = open(fn, "w")
+    fp.write("%d\n" % rate)
+    fp.close()
+    return True
+
 
 def compute_crate(fftsize,srate):
-    rates = [x for x in range(4200,2500,-25)]
+    rates = [x for x in range(6500,2500,-25)]
     
     for r in rates:
         d = float(srate)/float(fftsize)
