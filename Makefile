@@ -12,6 +12,7 @@ install: frb_hunter2.py frb_bulk_analyser.py
 	chmod 755 /usr/local/bin/frb_*.py
 	cp frb_buf_mgr.py /usr/local/bin
 	cp pulse_finder_1.py /usr/local/bin
+	cp runner /usr/local/bin
 
 clean:
 	rm -f frb_hunter2.py frb_bulk_analyser.py

@@ -32,18 +32,6 @@ options:
     state: enabled
 
 blocks:
-- name: awindow
-  id: variable
-  parameters:
-    comment: ''
-    value: 2**(int(np.log2(crate/10))+1)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [528, 76.0]
-    rotation: 0
-    state: true
 - name: crate
   id: variable
   parameters:
@@ -176,23 +164,6 @@ blocks:
     coordinate: [736, 172.0]
     rotation: 0
     state: true
-- name: decln
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: Declination
-    short_id: ''
-    type: str
-    value: '-99.0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [624, 572.0]
-    rotation: 0
-    state: true
 - name: device
   id: parameter
   parameters:
@@ -245,7 +216,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [768, 572.0]
+    coordinate: [768, 476.0]
     rotation: 0
     state: true
 - name: frb_buf_mgr
@@ -255,50 +226,17 @@ blocks:
     comment: ''
     source_code: "# this module will be imported in the into your flowgraph\nimport\
       \ os\nimport ephem\nimport time\nimport numpy as np\nimport shutil\nimport glob\n\
-      import copy\nimport shutil\nimport json\n\nmovelist = []\n\n#\n# Helper to produce\
-      \ a vector that is mostly zeros, but with 1s in the middle 10%\n#\ndef tp_vector(fftsize):\n\
-      \    rvec = [0.0]*fftsize\n    mid = int(fftsize/2)\n    tenp = float(fftsize)*0.1\n\
-      \    tenp = int(tenp)\n    fivep = int(tenp/2)\n    for ndx in range(mid-fivep,mid+fivep+1):\n\
-      \        rvec[ndx] = 1.0\n    return rvec\n\ndef harvest(pacer,prefix,permdir,seconds):\n\
-      \    global movelist\n    \n    #\n    # Handle files on the \"movelist\"\n\
-      \    #\n    for f in movelist:\n        shutil.move(f,permdir)\n    \n    movelist\
-      \ = []\n    \n    #\n    # Harvest data that isn't associated with an event\n\
-      \    #\n    \n    #\n    # First find \"event\" files in the buffer directory\n\
-      \    #\n    flist = glob.glob(prefix+\"frb-event-*\")\n    \n    #\n    # Create\
-      \ empty event dictionary\n    #\n    evdict = {}\n    for f in flist:\n    \
-      \    sts = os.stat(f)\n        #\n        # Add event only if it's \"fresh\"\
-      \n        #\n        if ((time.time() - sts.st_mtime) <= seconds*10):\n    \
-      \        evdict[f] = sts.st_mtime\n        \n        #\n        # Otherwise,\
-      \ remove\n        #\n        else:\n            os.remove(f)\n            \n\
-      \    #\n    # Find matching buffer file\n    #\n    flist = glob.glob(prefix+\"\
-      frb-buffer-*\")\n    for f in flist:\n        sts = os.stat(f)\n        \n \
-      \       #\n        # We have a buffer file, see if there's a matching \"event\"\
-      \ file\n        #\n        for ev in evdict:\n            #\n            # If\
-      \ the event falls within the purview of the buffer file\n            #\n   \
-      \         if sts.st_mtime > evdict[ev] and (sts.st_mtime-seconds) < evdict[ev]:\n\
-      \                #\n                # Move event file to perm directory\n  \
-      \              #\n                try:\n                    shutil.move(ev,permdir)\n\
-      \                except:\n                    pass\n                \n     \
-      \           if ((time.time() - sts.st_mtime) > seconds):\n                 \
-      \   try:\n                        shutil.move(f,permdir)\n                 \
-      \   except:\n                        pass\n                else:\n         \
-      \           #\n                    # Defer buffer movement to next cycle--buffer\
-      \ may be partially-full\n                    #\n                    movelist.append(f)\n\
-      \                \n    \n    #\n    # Delete buffers that are old enough and\
-      \ didn't match any events\n    #\n    for f in flist:\n        if (f not in\
-      \ movelist):\n            if os.path.exists(f):\n                sts = os.stat(f)\n\
-      \                if ((time.time() - sts.st_mtime) > seconds*10):\n         \
-      \           os.remove(f)        \n        \n    return True\n\ndef write_rate(fn,\
+      import copy\nimport shutil\nimport json\n\nmovelist = []\n\n\ndef write_rate(fn,\
       \ rate):\n    fp = open(fn, \"w\")\n    fp.write(\"%d\\n\" % rate)\n    fp.close()\n\
       \    return True\n\n\ndef compute_crate(fftsize,srate):\n    rates = [x for\
-      \ x in range(6500,2500,-25)]\n    \n    for r in rates:\n        d = float(srate)/float(fftsize)\n\
+      \ x in range(8700,2500,-25)]\n    for r in rates:\n        d = float(srate)/float(fftsize)\n\
       \        d /= float(r)\n        \n        if (d == float(int(d))):\n       \
       \     return r\n    return 2500\n\n    \n"
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1384, 540.0]
+    coordinate: [1784, 516.0]
     rotation: 0
     state: enabled
 - name: freq
@@ -328,7 +266,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 140.0]
+    coordinate: [528, 60.0]
     rotation: 0
     state: true
 - name: import_0_0
@@ -341,24 +279,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [416, 148.0]
-    rotation: 0
-    state: true
-- name: longitude
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: Local Longitude
-    short_id: ''
-    type: eng_float
-    value: '-76.03'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [624, 476.0]
+    coordinate: [416, 60.0]
     rotation: 0
     state: true
 - name: osmosdr_source_0
@@ -718,23 +639,6 @@ blocks:
     coordinate: [56, 140.0]
     rotation: 0
     state: true
-- name: permdir
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: File prefix for permanent event files
-    short_id: ''
-    type: str
-    value: '"./"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [80, 580.0]
-    rotation: 0
-    state: true
 - name: prefix
   id: parameter
   parameters:
@@ -749,7 +653,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [256, 580.0]
+    coordinate: [608, 476.0]
     rotation: 0
     state: true
 - name: rfgain
@@ -783,7 +687,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 676.0]
+    coordinate: [728, 580.0]
     rotation: 0
     state: true
 - name: single_pole_iir_filter_xx_1
@@ -819,23 +723,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [240, 468.0]
-    rotation: 0
-    state: true
-- name: threshold
-  id: parameter
-  parameters:
-    alias: ''
-    comment: ''
-    hide: none
-    label: Trigger threshold
-    short_id: ''
-    type: eng_float
-    value: '5.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [416, 572.0]
     rotation: 0
     state: true
 - name: virtual_sink_0
