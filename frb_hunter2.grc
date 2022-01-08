@@ -89,7 +89,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1256, 132.0]
+    coordinate: [1312, 228.0]
     rotation: 0
     state: true
 - name: blocks_file_sink_0
@@ -143,7 +143,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1752, 124.0]
+    coordinate: [1848, 212.0]
     rotation: 0
     state: true
 - name: blocks_stream_to_vector_1
@@ -161,7 +161,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [736, 172.0]
+    coordinate: [736, 244.0]
     rotation: 0
     state: true
 - name: device
@@ -179,6 +179,50 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [72, 468.0]
+    rotation: 0
+    state: true
+- name: fft_logger_1
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
+      from gnuradio import gr\nimport time\n\n\nclass blk(gr.sync_block):  # other\
+      \ base classes are basic_block, decim_block, interp_block\n    \"\"\"FFT loggert\"\
+      \"\"\n\n    def __init__(self, fftsize=4096, logfile=\"fft_log.out\"):  # only\
+      \ default arguments here\n        \"\"\"arguments to this function show up as\
+      \ parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n\
+      \            name='FFT Logger',   # will show up in GRC\n            in_sig=[(np.float32,fftsize)],\n\
+      \            out_sig=None\n        )\n        # if an attribute with the same\
+      \ name as a parameter is found,\n        # a callback is registered (properties\
+      \ work, too).\n        self.fftsize = fftsize\n        self.logfile = logfile\n\
+      \        self.lasttime = time.time()\n        self.fftbuf = np.zeros(self.fftsize,\
+      \ dtype=np.float32)\n        self.fftcnt = 0\n\n    def work(self, input_items,\
+      \ output_items):\n        \"\"\"Log output of LogPwrFFT\"\"\"\n        now =\
+      \ time.time()\n        for x in input_items[0]:\n            self.fftbuf = np.add(self.fftbuf,\
+      \ x)\n            self.fftcnt += 1\n        if ((now - self.lasttime) > 120):\n\
+      \            self.lasttime = now\n            fp = open(self.logfile, \"w\"\
+      )\n            for i in range(int(self.fftsize/2), self.fftsize):\n        \
+      \        fp.write(\"%.2f,\" % (self.fftbuf[i]/self.fftcnt))\n            for\
+      \ i in range(0,int(self.fftsize/2)):\n                fp.write(\"%.2f\" % (self.fftbuf[i]/self.fftcnt))\n\
+      \                if (i < int(self.fftsize/2)-1):\n                    fp.write(\"\
+      ,\")\n            fp.write(\"\\n\")\n            self.fftcnt = 0\n         \
+      \   fp.close()\n            \n            \n            \n        return len(input_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    fftsize: '4096'
+    logfile: prefix+logfile
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    _io_cache: ('FFT Logger', 'blk', [('fftsize', '4096'), ('logfile', "'fft_log.out'")],
+      [('0', 'float', 4096)], [], 'FFT loggert', ['fftsize', 'logfile'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1608, 68.0]
     rotation: 0
     state: true
 - name: fft_vxx_0
@@ -199,7 +243,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 108.0]
+    coordinate: [1048, 196.0]
     rotation: 0
     state: true
 - name: fftsize
@@ -280,6 +324,45 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [416, 60.0]
+    rotation: 0
+    state: true
+- name: logfile
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Logfile name
+    short_id: ''
+    type: str
+    value: '"fft_log.out"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 580.0]
+    rotation: 0
+    state: true
+- name: logpwrfft_x_0
+  id: logpwrfft_x
+  parameters:
+    affinity: ''
+    alias: ''
+    average: 'True'
+    avg_alpha: '0.001'
+    comment: ''
+    fft_size: '4096'
+    frame_rate: '15'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ref_scale: '2'
+    sample_rate: samp_rate
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [768, 60.0]
     rotation: 0
     state: true
 - name: osmosdr_source_0
@@ -705,7 +788,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1528, 124.0]
+    coordinate: [1608, 212.0]
     rotation: 0
     state: true
 - name: srate
@@ -735,7 +818,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2016, 132.0]
+    coordinate: [2080, 212.0]
     rotation: 0
     state: true
 - name: virtual_source_0_0
@@ -755,9 +838,11 @@ blocks:
 connections:
 - [blocks_complex_to_mag_squared_1, '0', single_pole_iir_filter_xx_1, '0']
 - [blocks_head_0, '0', blocks_stream_to_vector_1, '0']
+- [blocks_head_0, '0', logpwrfft_x_0, '0']
 - [blocks_keep_one_in_n_1, '0', virtual_sink_0, '0']
 - [blocks_stream_to_vector_1, '0', fft_vxx_0, '0']
 - [fft_vxx_0, '0', blocks_complex_to_mag_squared_1, '0']
+- [logpwrfft_x_0, '0', fft_logger_1, '0']
 - [osmosdr_source_0, '0', blocks_head_0, '0']
 - [single_pole_iir_filter_xx_1, '0', blocks_keep_one_in_n_1, '0']
 - [virtual_source_0_0, '0', blocks_file_sink_0, '0']
