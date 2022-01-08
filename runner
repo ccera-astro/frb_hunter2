@@ -1,11 +1,12 @@
 #!/bin/bash
-if [ $# -lt 2 ]
+if [ $# -lt 3 ]
 then
-	echo "Usage: runner savedir declination"
+	echo "Usage: runner savedir declination longitude"
 	exit
 fi
 DECLN=$2
 SAVE=$1
+LONGIT=$3
 usbtype=`lsusb|awk '/Bus / {print $6}'`
 echo usbtype $usbtype
 for usbline in $usbtype
@@ -29,25 +30,41 @@ do
 done
 while true
 do
+    #
+    # If declinaton specifier is apparently a file...
+    #
     if [ -e $2 ]
     then
 		DECLN=`cat $2`
 	fi
 	echo "Starting using a $DEVNAME device" at $SRATE SPS
-	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq 1415.0e6
+	#
+	# Record 10 minutes worth of detector channel-bank data
+	#
+	# It will produce output in <prefix>/frb_tmp.dat
+	# It also produces a "frb_rate.txt" file in current directory to convey the
+	#  selected channel rate.  The channel-rate usually allows for 130-150usec
+	#  time-domain resolution.
+	#
+	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq 1415.0e6 --seconds 600 \
+	  --prefix /run/user/$UID/
+	
+	#
+	# Run a whack of trial-dedispersions, looking for a pulse
+	#
 	for sd in 0.5 1 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0
 	do
 	    rm -f /run/user/$UID/frb-event.json
-		frb_bulk_analyser.py --declination $2 --infile /run/user/$UID/frb_tmp.dat --srate `cat frb_rate.txt` \
-		  --threshold 3.5 --sdelay $sd --prefix /run/user/$UID/
+		frb_bulk_analyser.py --declination $DECLN --infile /run/user/$UID/frb_tmp.dat --srate `cat frb_rate.txt` \
+		  --threshold 3.5 --sdelay $sd --prefix /run/user/$UID/ --seconds 600 --longitude $LONGIT
 		if [ -e /run/user/$UID/frb-event.json ]
 		then
 			ts=`date -u +%Y%m%d-%H%M%S`
 			mv /run/user/$UID/frb_tmp.dat $SAVE/$ts.bin
-			mv /run/user/%UID/frb-event.josn $SAVE/%ts.json
+			mv /run/user/$UID/frb-event.josn $SAVE/$ts-$sd.json
 			break
 		fi
 	done
 	sleep 10
 done
-		
+
