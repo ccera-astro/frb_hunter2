@@ -251,20 +251,21 @@ blocks:
       \ as a parameter is found,\n        # a callback is registered (properties work,\
       \ too).\n        self.fftsize = fftsize\n        self.logfile = logfile\n  \
       \      self.lasttime = time.time()\n        self.fftbuf = np.zeros(self.fftsize,\
-      \ dtype=np.float32)\n        self.fftcnt = 0\n        \n    def dbify(self,val):\n\
-      \        winpower = sum([x*x for x in window.blackmanharris(self.fftsize)])\n\
-      \        x = math.log10(val)-20*math.log10(self.fftsize)-10*math.log10(winpower/self.fftsize)\n\
-      \        \"\"\"\n        20*math.log10(fftsize)-10*math.log10(winpower/fftsize))\n\
-      \        \"\"\"\n        return x\n\n    def work(self, input_items, output_items):\n\
-      \        \"\"\"Log output of LogPwrFFT\"\"\"\n        now = time.time()\n  \
-      \      for x in input_items[0]:\n            self.fftbuf = np.add(self.fftbuf,\
-      \ x)\n            self.fftcnt += 1\n        if ((now - self.lasttime) > 120):\n\
-      \            self.lasttime = now\n            fp = open(self.logfile, \"w\"\
-      )\n            for i in range(0,self.fftsize):\n                x = self.dbify(self.fftbuf[i]/self.fftcnt)\n\
-      \                fp.write(\"%.2f\" % x)\n                if (i < self.fftsize-1):\n\
-      \                    fp.write(\",\")\n            fp.write(\"\\n\")\n      \
-      \      self.fftcnt = 0\n            fp.close()\n            \n            \n\
-      \            \n        return len(input_items[0])\n"
+      \ dtype=np.float32)\n        self.fftcnt = 0\n        self.winpower = sum([x*x\
+      \ for x in window.blackmanharris(self.fftsize)])\n        self.scale = 20*math.log10(self.fftsize)\
+      \ - 10*math.log10(self.winpower/self.fftsize)\n        \n\n    def work(self,\
+      \ input_items, output_items):\n        \"\"\"Log output of LogPwrFFT\"\"\"\n\
+      \        now = time.time()\n        for x in input_items[0]:\n            self.fftbuf\
+      \ = np.add(self.fftbuf, x)\n            self.fftcnt += 1\n        if ((now -\
+      \ self.lasttime) > 120):\n            self.lasttime = now\n            fp =\
+      \ open(self.logfile, \"w\")\n            self.fftbuf = np.divide(self.fftbuf,self.fftcnt)\n\
+      \            self.fftbuf = np.log10(self.fftbuf)\n            self.fftbuf =\
+      \ np.subtract(self.fftbuf, self.scale)\n            for i in range(0,self.fftsize):\n\
+      \                fp.write(\"%.2f\" % self.fftbuf[i])\n                if (i\
+      \ < self.fftsize-1):\n                    fp.write(\",\")\n            fp.write(\"\
+      \\n\")\n            self.fftcnt = 0\n            self.fftbuf = np.zeros(self.fftsize,dtype=np.float32)\n\
+      \            fp.close()\n            \n            \n            \n        return\
+      \ len(input_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
