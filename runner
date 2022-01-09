@@ -14,12 +14,14 @@ do
 	case $usbline in
 		2500:00*)
 			SRATE=15e6
+			FREQ=1415.0e6
 			DEVICE="uhd,type=b200,num_recv_frames=512,otw_format=sc8,master_clock_rate=30e6"
 			RFGAIN=70
 			DEVNAME="USRP B2XX"
 			;;
 		1d50:*)
 			SRATE=10e6
+			FREQ=1418.0e6
 			DEVICE="airspy,linearity=1"
 			RFGAIN=40
 			DEVNAME="AirSpy R2"
@@ -46,7 +48,7 @@ do
 	#  selected channel rate.  The channel-rate usually allows for 130-150usec
 	#  time-domain resolution.
 	#
-	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq 1415.0e6 --seconds 600 \
+	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds 600 \
 	  --prefix /run/user/$UID/
 	
 	#
