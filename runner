@@ -15,7 +15,7 @@ do
 		2500:00*)
 			SRATE=15e6
 			DEVICE="uhd,type=b200,num_recv_frames=512,otw_format=sc8,master_clock_rate=30e6"
-			RFGAIN=60
+			RFGAIN=70
 			DEVNAME="USRP B2XX"
 			;;
 		1d50:*)
