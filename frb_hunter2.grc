@@ -261,7 +261,7 @@ blocks:
       \ open(self.logfile, \"w\")\n            self.fftbuf = np.divide(self.fftbuf,self.fftcnt)\n\
       \            self.fftbuf = np.log10(self.fftbuf)\n            self.fftbuf =\
       \ np.subtract(self.fftbuf, self.scale)\n            for i in range(0,self.fftsize):\n\
-      \                fp.write(\"%.2f\" % self.fftbuf[i])\n                if (i\
+      \                fp.write(\"%.3f\" % self.fftbuf[i])\n                if (i\
       \ < self.fftsize-1):\n                    fp.write(\",\")\n            fp.write(\"\
       \\n\")\n            self.fftcnt = 0\n            self.fftbuf = np.zeros(self.fftsize,dtype=np.float32)\n\
       \            fp.close()\n            \n            \n            \n        return\
