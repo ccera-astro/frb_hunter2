@@ -4,6 +4,7 @@ then
 	echo "Usage: runner savedir declination longitude"
 	exit
 fi
+TMPDIR=$HOME
 DECLN=$2
 SAVE=$1
 LONGIT=$3
@@ -49,7 +50,7 @@ do
 	#  time-domain resolution.
 	#
 	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds 600 \
-	  --prefix /run/user/$UID/
+	  --prefix $TMPDIR/
 	
 	#
 	# Run a whack of trial-dedispersions, looking for a pulse
@@ -57,13 +58,13 @@ do
 	for sd in 0.5 1 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0
 	do
 	    rm -f /run/user/$UID/frb-event.json
-		frb_bulk_analyser.py --declination $DECLN --infile /run/user/$UID/frb_tmp.dat --srate `cat frb_rate.txt` \
-		  --threshold 3.5 --sdelay $sd --prefix /run/user/$UID/ --seconds 600 --longitude $LONGIT
-		if [ -e /run/user/$UID/frb-event.json ]
+		frb_bulk_analyser.py --declination $DECLN --infile $TMPDIR/frb_tmp.dat --srate `cat frb_rate.txt` \
+		  --threshold 3.5 --sdelay $sd --prefix $TMPDIR/ --seconds 600 --longitude $LONGIT
+		if [ -e $TMPDIR/frb-event.json ]
 		then
 			ts=`date -u +%Y%m%d-%H%M%S`
-			mv /run/user/$UID/frb_tmp.dat $SAVE/$ts.bin
-			mv /run/user/$UID/frb-event.josn $SAVE/$ts-$sd.json
+			mv $TMPDIR/frb_tmp.dat $SAVE/$ts.bin
+			mv $TMPDIR/frb-event.josn $SAVE/$ts-$sd.json
 			break
 		fi
 	done
