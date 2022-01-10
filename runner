@@ -58,12 +58,17 @@ do
 	for sd in 0.5 1 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0
 	do
 	    rm -f /run/user/$UID/frb-event.json
-		frb_bulk_analyser.py --declination $DECLN --infile $TMPDIR/frb_tmp.dat --srate `cat frb_rate.txt` \
+	    SRATE=`cat frb_rate.txt`
+		frb_bulk_analyser.py --declination $DECLN --infile $TMPDIR/frb_tmp.dat --srate $SRATE \
 		  --threshold 3.5 --sdelay $sd --prefix $TMPDIR/ --seconds 600 --longitude $LONGIT
 		if [ -e $TMPDIR/frb-event.json ]
 		then
 			ts=`date -u +%Y%m%d-%H%M%S`
-			mv $TMPDIR/frb_tmp.dat $SAVE/$ts.bin
+			count=`awk '/scount/ {print $2}' $TMPDIR/frb-event.json`
+			offset=`expr $count - $SRATE`
+			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/ts.bin bs=64 skip=$offset count=`expr $SRATE * 2`
+			#mv $TMPDIR/frb_tmp.dat $SAVE/$ts.bin
+			
 			mv $TMPDIR/frb-event.josn $SAVE/$ts-$sd.json
 			break
 		fi
