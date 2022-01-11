@@ -66,7 +66,7 @@ do
 			ts=`date -u +%Y%m%d-%H%M%S`
 			count=`awk '/scount/ {print $2}' $TMPDIR/frb-event.json`
 			offset=`expr $count - $CRATE`
-			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/ts.bin bs=64 skip=$offset count=`expr $CRATE * 2`
+			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=`expr $CRATE * 2`
 			#mv $TMPDIR/frb_tmp.dat $SAVE/$ts.bin
 			
 			mv $TMPDIR/frb-event.josn $SAVE/$ts-$sd.json

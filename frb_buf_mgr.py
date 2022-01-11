@@ -8,8 +8,14 @@ import glob
 import copy
 import shutil
 import json
+import math
 
 movelist = []
+
+def getalpha(corner, srate):
+	q = math.pow(math.e,-2.0*(corner/srate))
+	alpha = 1.0 - q
+	return alpha
 
 
 def write_rate(fn, rate):

@@ -352,12 +352,14 @@ blocks:
     comment: ''
     source_code: "# this module will be imported in the into your flowgraph\nimport\
       \ os\nimport ephem\nimport time\nimport numpy as np\nimport shutil\nimport glob\n\
-      import copy\nimport shutil\nimport json\n\nmovelist = []\n\n\ndef write_rate(fn,\
-      \ rate):\n    fp = open(fn, \"w\")\n    fp.write(\"%d\\n\" % rate)\n    fp.close()\n\
-      \    return True\n\n\ndef compute_crate(fftsize,srate):\n    rates = [x for\
-      \ x in range(8700,2500,-25)]\n    for r in rates:\n        d = float(srate)/float(fftsize)\n\
-      \        d /= float(r)\n        \n        if (d == float(int(d))):\n       \
-      \     return r\n    return 2500\n\n    \n"
+      import copy\nimport shutil\nimport json\nimport math\n\nmovelist = []\n\ndef\
+      \ getalpha(corner, srate):\n\tq = math.pow(math.e,-2.0*(corner/srate))\n\talpha\
+      \ = 1.0 - q\n\treturn alpha\n\n\ndef write_rate(fn, rate):\n    fp = open(fn,\
+      \ \"w\")\n    fp.write(\"%d\\n\" % rate)\n    fp.close()\n    return True\n\n\
+      \ndef compute_crate(fftsize,srate):\n    rates = [x for x in range(8700,2500,-25)]\n\
+      \    for r in rates:\n        d = float(srate)/float(fftsize)\n        d /=\
+      \ float(r)\n        \n        if (d == float(int(d))):\n            return r\n\
+      \    return 2500\n\n    \n"
   states:
     bus_sink: false
     bus_source: false
@@ -838,7 +840,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    alpha: 1.0/(samp_rate/fftsize/crate)
+    alpha: frb_buf_mgr.getalpha(crate,(samp_rate/fftsize))
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
