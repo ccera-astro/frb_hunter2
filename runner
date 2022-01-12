@@ -70,7 +70,7 @@ do
 			# Make trimmed copies of the filter-bank data, and the dedispersed data
 			#
 			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=`expr $CRATE * 2`
-			dd if=$TMPDIR/frb_dedisp.dat of=$SAVE/$ts-$sd.bin bs=1 skip=$offset count=`expr $CRATE * 2`
+			dd if=$TMPDIR/frb_dedisp.dat of=$SAVE/$ts-$sd.bin bs=4 skip=$offset count=`expr $CRATE * 2`
 			mv $TMPDIR/frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
