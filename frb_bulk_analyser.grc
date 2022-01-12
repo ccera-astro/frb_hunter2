@@ -384,6 +384,24 @@ blocks:
     coordinate: [1480, 520.0]
     rotation: 0
     state: true
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: prefix+"frb_dedisp.dat"
+    type: float
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1656, 676.0]
+    rotation: 0
+    state: true
 - name: blocks_file_source_0
   id: blocks_file_source
   parameters:
@@ -614,7 +632,7 @@ blocks:
     tstamp: os.stat(infile).st_mtime
   states:
     _io_cache: ('FRB Pulse Finder', 'blk', [('threshold', '4.0'), ('srate', '6250'),
-      ('tstamp', '1641937731.2627282'), ('seconds', '600'), ('longitude', '-76.108'),
+      ('tstamp', '1641951526.1598616'), ('seconds', '600'), ('longitude', '-76.108'),
       ('declination', '-99.0'), ('prefix', "'./'")], [('0', 'float', 1)], [], 'FRB
       Pulse finder - a simple multiply const', ['declination', 'longitude', 'prefix',
       'seconds', 'srate', 'threshold', 'tstamp'])
@@ -713,6 +731,7 @@ blocks:
 
 connections:
 - [blocks_add_xx_0, '0', blocks_divide_xx_0, '0']
+- [blocks_add_xx_0, '0', blocks_file_sink_0, '0']
 - [blocks_add_xx_0, '0', single_pole_iir_filter_xx_0, '0']
 - [blocks_delay_0, '0', blocks_add_xx_0, '0']
 - [blocks_delay_0_0, '0', blocks_add_xx_0, '1']

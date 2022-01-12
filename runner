@@ -66,11 +66,12 @@ do
 			ts=`date -u +%Y%m%d-%H%M%S`
 			count=`awk '/scount/ {print $2}' $TMPDIR/frb-event.json`
 			offset=`expr $count - $CRATE`
+			#
+			# Make trimmed copies of the filter-bank data, and the dedispersed data
+			#
 			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=`expr $CRATE * 2`
-			#mv $TMPDIR/frb_tmp.dat $SAVE/$ts.bin
-			
-			mv $TMPDIR/frb-event.josn $SAVE/$ts-$sd.json
-			break
+			dd if=$TMPDIR/frb_dedisp.dat of=$SAVE/$ts-$sd.bin bs=1 skip=$offset count=`expr $CRATE * 2`
+			mv $TMPDIR/frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
 	sleep 10
