@@ -1,13 +1,18 @@
 #!/bin/bash
 if [ $# -lt 3 ]
 then
-	echo "Usage: runner savedir declination longitude"
+	echo "Usage: runner savedir declination longitude [thresh]"
 	exit
 fi
+THRESH=10.0
 TMPDIR=$HOME
 DECLN=$2
 SAVE=$1
 LONGIT=$3
+if [ @$4@ != "@@" ]
+then
+	THRESH=$4
+fi
 usbtype=`lsusb|awk '/Bus / {print $6}'`
 echo usbtype $usbtype
 for usbline in $usbtype
@@ -51,7 +56,7 @@ do
 	#
 	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds 600 \
 	  --prefix $TMPDIR/
-	
+	trap 'exit' 1 2 3 4 5 6 7 8 19 10 11 12 13 14 15
 	#
 	# Run a whack of trial-dedispersions, looking for a pulse
 	#
@@ -59,8 +64,10 @@ do
 	do
 	    rm -f /run/user/$UID/frb-event.json
 	    CRATE=`cat frb_rate.txt`
+	    cnt=`expr $CRATE '*' 2`
+
 		frb_bulk_analyser.py --declination $DECLN --infile $TMPDIR/frb_tmp.dat --srate $CRATE \
-		  --threshold 3.5 --sdelay $sd --prefix $TMPDIR/ --seconds 600 --longitude $LONGIT
+		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/ --seconds 600 --longitude $LONGIT
 		if [ -e $TMPDIR/frb-event.json ]
 		then
 			ts=`date -u +%Y%m%d-%H%M%S`
@@ -69,8 +76,8 @@ do
 			#
 			# Make trimmed copies of the filter-bank data, and the dedispersed data
 			#
-			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=`expr $CRATE * 2`
-			dd if=$TMPDIR/frb_dedisp.dat of=$SAVE/$ts-$sd.bin bs=4 skip=$offset count=`expr $CRATE * 2`
+			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=$cnt
+			dd if=$TMPDIR/frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
 			mv $TMPDIR/frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
