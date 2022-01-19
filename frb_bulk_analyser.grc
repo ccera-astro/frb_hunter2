@@ -617,7 +617,7 @@ blocks:
     tstamp: os.stat(infile).st_mtime
   states:
     _io_cache: ('FRB Pulse Finder', 'blk', [('threshold', '4.0'), ('srate', '6250'),
-      ('tstamp', '1642184679.1803694'), ('seconds', '600'), ('longitude', '-76.108'),
+      ('tstamp', '1642211956.6924953'), ('seconds', '600'), ('longitude', '-76.108'),
       ('declination', '-99.0'), ('prefix', "'./'")], [('0', 'float', 1)], [], 'FRB
       Pulse finder - a simple multiply const', ['declination', 'longitude', 'prefix',
       'seconds', 'srate', 'threshold', 'tstamp'])

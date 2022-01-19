@@ -70,14 +70,6 @@ do
 		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/ --seconds 600 --longitude $LONGIT
 		if [ -e $TMPDIR/frb-event.json ]
 		then
-		    #
-		    # If event detected at 0 DM, likely NOT cosmic!
-		    #
-		    if [ $sd = "0.0" ]
-		    then
-				rm -f $TMPDIR/frb-event.json
-				break
-			fi
 			ts=`date -u +%Y%m%d-%H%M%S`
 			count=`awk '/scount/ {print $2}' $TMPDIR/frb-event.json`
 			offset=`expr $count - $CRATE`
