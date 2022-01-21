@@ -28,7 +28,7 @@ do
 		1d50:*)
 			SRATE=10e6
 			FREQ=1420.4058e6
-			DEVICE="airspy=0"
+			DEVICE="airspy=0,sensitivity=1"
 			RFGAIN=25
 			DEVNAME="AirSpy R2"
 			SRATE=`airspy_info |awk '/6.0.*MSPS/ {print "6.0e6"}
