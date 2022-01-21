@@ -22,14 +22,14 @@ do
 			SRATE=15e6
 			FREQ=1420.4058e6
 			DEVICE="uhd,type=b200,num_recv_frames=512,otw_format=sc8,master_clock_rate=30e6"
-			RFGAIN=70
+			RFGAIN=65
 			DEVNAME="USRP B2XX"
 			;;
 		1d50:*)
 			SRATE=10e6
 			FREQ=1420.4058e6
-			DEVICE="airspy,linearity=1"
-			RFGAIN=40
+			DEVICE="airspy=0"
+			RFGAIN=25
 			DEVNAME="AirSpy R2"
 			SRATE=`airspy_info |awk '/6.0.*MSPS/ {print "6.0e6"}
 			/10.0.*MSPS/ {print "10.0e6"}'`
@@ -60,6 +60,9 @@ do
 	#
 	# Run a whack of trial-dedispersions, looking for a pulse
 	#
+	nzero=0
+	ndisp=0
+	tslist="None"
 	for sd in 0.0 0.5 1 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0
 	do
 	    rm -f $TMPDIR/frb-event.json
@@ -70,7 +73,14 @@ do
 		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/ --seconds 600 --longitude $LONGIT
 		if [ -e $TMPDIR/frb-event.json ]
 		then
+		    if [ $sd = 0.0 ]
+		    then
+		        nzero=`expr $nzero + 1`
+		    else
+		        ndisp=`expr $ndisp + 1`
+		    fi
 			ts=`date -u +%Y%m%d-%H%M%S`
+		    tslist="$tslist $ts"
 			count=`awk '/scount/ {print $2}' $TMPDIR/frb-event.json`
 			offset=`expr $count - $CRATE`
 			#
@@ -81,6 +91,13 @@ do
 			mv $TMPDIR/frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
+	if [ $ndisp -le 0 ]
+	then
+		for f in $tslist
+		do
+			rm -f $SAVE/${f}*
+		done
+	fi
 	sleep 10
 done
 
