@@ -1,51 +1,109 @@
 #!/bin/bash
-if [ $# -lt 3 ]
-then
-	echo "Usage: runner savedir declination longitude [thresh]"
-	exit
-fi
-THRESH=10.0
+cat >helptmp$$ <<"!EOF!"
+Usage: runner --device <dev> --longitude <long> --decln <dec> --antenna <ant>
+    [--srate <rate>] [--frequency <freq>] [--save <savedir>] [--chan <chname>]
+    [--temp <tmpdir>] [--threshold <thresh>]
+!EOF!
+SRATE=10e6
+RFGAIN=30
 TMPDIR=$HOME
-DECLN=$2
-SAVE=$1
-LONGIT=$3
-if [ @$4@ != "@@" ]
+CHAN=FRB0
+FREQ=1420.4058e6
+SAVEDIR=$HOME/ra_data
+DEVICE=None
+DECLN=None
+LONG=None
+THRESH=8.5
+ANT=None
+if [ $# -le 0 ]
 then
-	THRESH=$4
+	cat helptmp$$
+	rm -f helptmp$$
+	exit 0
 fi
-usbtype=`lsusb|awk '/Bus / {print $6}'`
-echo usbtype $usbtype
-for usbline in $usbtype
+while [ $# -gt 0 ]
 do
-	case $usbline in
-		2500:00*)
-			SRATE=15e6
-			FREQ=1420.4058e6
-			DEVICE="uhd,type=b200,num_recv_frames=512,otw_format=sc8,master_clock_rate=30e6"
-			RFGAIN=65
-			DEVNAME="USRP B2XX"
+	case $1 in
+		--device|--dev)
+			DEVICE="$2"
+			shift 2
 			;;
-		1d50:*)
-			SRATE=10e6
-			FREQ=1420.4058e6
-			DEVICE="airspy=0,sensitivity=1"
-			RFGAIN=25
-			DEVNAME="AirSpy R2"
-			SRATE=`airspy_info |awk '/6.0.*MSPS/ {print "6.0e6"}
-			/10.0.*MSPS/ {print "10.0e6"}'`
-		;;
+		--srate)
+			SRATE=$2
+			shift 2
+			;;
+		--freq|--frequency)
+			FREQ=$2
+			shift 2
+			;;
+		--rfgain)
+			RFGAIN=$2
+			shift 2
+			;;
+		--save)
+			SAVEDIR=$2
+			shift 2
+			;;
+		--chan)
+			CHAN=$2
+			shift 2
+			;;
+		--declination|--dec|--decln)
+			DECLN=$2
+			shift 2
+			;;
+		--antenna|--ant)
+			ANT=$2
+			shift 2
+			;;
+		--thresh|--threshold)
+			THRESH=$2
+			shift 2;
+			;;
+		--longitude|--long)
+			LONG=$2
+			shift 2
+			;;
+		--temp|--tmp)
+			TEMPDIR=$2
+			shift 2
+			;;
+		--help)
+			cat helptmp$$
+			rm -f helptmp$$
+			exit 0
+			;;
+		*)
+			echo "Unknown argument: $1"
+			rm -f helptmp$$
+			exit 1
+			;;
 	esac
 done
+rm -f helptmp$$
+for arg in DEVICE LONG DECLN ANT
+do
+	#echo PROCESSING $arg
+	vv=$( eval "echo \$$arg" )
+	if [ "$vv" = None ]
+	then
+		echo Missing required value for: $arg
+		exit 1
+	fi
+done
+
+
 while true
 do
     #
     # If declinaton specifier is apparently a file...
     #
-    if [ -e $2 ]
+    decln=$DECLN
+    if [ -e $DECLN ]
     then
-		DECLN=`cat $2`
+		decln=`cat $2`
 	fi
-	echo "Starting using a $DEVNAME device" at $SRATE SPS
+
 	#
 	# Record 10 minutes worth of detector channel-bank data
 	#
@@ -55,7 +113,7 @@ do
 	#  time-domain resolution.
 	#
 	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds 600 \
-	  --prefix $TMPDIR/
+	  --prefix $TMPDIR/$CHAN-
 	trap 'exit' 1 2 3 4 5 6 7 8 19 10 11 12 13 14 15
 	#
 	# Run a whack of trial-dedispersions, looking for a pulse
@@ -65,13 +123,13 @@ do
 	tslist="None"
 	for sd in 0.0 0.5 1 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0
 	do
-	    rm -f $TMPDIR/frb-event.json
+	    rm -f $TMPDIR/$CHAN-frb-event.json
 	    CRATE=`cat frb_rate.txt`
 	    cnt=`expr $CRATE '*' 2`
 
-		frb_bulk_analyser.py --declination $DECLN --infile $TMPDIR/frb_tmp.dat --srate $CRATE \
-		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/ --seconds 600 --longitude $LONGIT
-		if [ -e $TMPDIR/frb-event.json ]
+		frb_bulk_analyser.py --declination $decln --infile $TMPDIR/$CHAN-frb_tmp.dat --srate $CRATE \
+		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds 600 --longitude $LONG
+		if [ -e $TMPDIR/$CHAN-frb-event.json ]
 		then
 		    if [ $sd = 0.0 ]
 		    then
@@ -81,14 +139,14 @@ do
 		    fi
 			ts=`date -u +%Y%m%d-%H%M%S`
 		    tslist="$tslist $ts"
-			count=`awk '/scount/ {print $2}' $TMPDIR/frb-event.json`
+			count=`awk '/scount/ {print $2}' $TMPDIR/$CHAN-frb-event.json`
 			offset=`expr $count - $CRATE`
 			#
 			# Make trimmed copies of the filter-bank data, and the dedispersed data
 			#
-			dd if=$TMPDIR/frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=$cnt
-			dd if=$TMPDIR/frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
-			mv $TMPDIR/frb-event.json $SAVE/$ts-$sd.json
+			dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=$cnt
+			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
+			mv $TMPDIR/$CHAN-frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
 	if [ $ndisp -le 0 ]
