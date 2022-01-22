@@ -121,7 +121,8 @@ do
 	nzero=0
 	ndisp=0
 	tslist="None"
-	for sd in 0.0 0.5 1 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0
+	copied=0
+	for sd in 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0
 	do
 	    rm -f $TMPDIR/$CHAN-frb-event.json
 	    CRATE=`cat frb_rate.txt`
@@ -144,7 +145,11 @@ do
 			#
 			# Make trimmed copies of the filter-bank data, and the dedispersed data
 			#
-			dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$ts-$sd.bin bs=64 skip=$offset count=$cnt
+			if [ $copied = 0 ]
+			then
+			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$ts.bin bs=64 skip=$offset count=$cnt
+			    copied=1
+			fi
 			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
 			mv $TMPDIR/$CHAN-frb-event.json $SAVE/$ts-$sd.json
 		fi
