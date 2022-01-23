@@ -2,19 +2,20 @@
 cat >helptmp$$ <<"!EOF!"
 Usage: runner --device <dev> --longitude <long> --decln <dec> --antenna <ant>
     [--srate <rate>] [--frequency <freq>] [--save <savedir>] [--chan <chname>]
-    [--temp <tmpdir>] [--threshold <thresh>]
+    [--temp <tmpdir>] [--threshold <thresh>] [--seconds <secs>]
 !EOF!
 SRATE=10e6
 RFGAIN=30
-TMPDIR=$HOME
 CHAN=FRB0
 FREQ=1420.4058e6
-SAVEDIR=$HOME/ra_data
+SAVE=$HOME/ra_data
 DEVICE=None
 DECLN=None
 LONG=None
 THRESH=8.5
 ANT=None
+TMPDIR=$HOME
+SECONDS=600
 if [ $# -le 0 ]
 then
 	cat helptmp$$
@@ -65,7 +66,11 @@ do
 			shift 2
 			;;
 		--temp|--tmp)
-			TEMPDIR=$2
+			TMPDIR=$2
+			shift 2
+			;;
+		--seconds)
+			SECONDS=$2
 			shift 2
 			;;
 		--help)
@@ -112,7 +117,7 @@ do
 	#  selected channel rate.  The channel-rate usually allows for 130-150usec
 	#  time-domain resolution.
 	#
-	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds 600 \
+	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds $SECONDS \
 	  --prefix $TMPDIR/$CHAN-
 	trap 'exit' 1 2 3 4 5 6 7 8 19 10 11 12 13 14 15
 	#
@@ -129,7 +134,7 @@ do
 	    cnt=`expr $CRATE '*' 2`
 
 		frb_bulk_analyser.py --declination $decln --infile $TMPDIR/$CHAN-frb_tmp.dat --srate $CRATE \
-		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds 600 --longitude $LONG
+		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds $SECONDS --longitude $LONG
 		if [ -e $TMPDIR/$CHAN-frb-event.json ]
 		then
 		    if [ $sd = 0.0 ]
@@ -140,17 +145,17 @@ do
 		    fi
 			ts=`date -u +%Y%m%d-%H%M%S`
 		    tslist="$tslist $ts"
-			count=`awk '/scount/ {print $2}' $TMPDIR/$CHAN-frb-event.json`
+			count=`awk '/scount/ {gsub(",", "", $2); print $2}' $TMPDIR/$CHAN-frb-event.json`
 			offset=`expr $count - $CRATE`
 			#
 			# Make trimmed copies of the filter-bank data, and the dedispersed data
 			#
 			if [ $copied = 0 ]
 			then
-			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$ts.bin bs=64 skip=$offset count=$cnt
+			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$ts.bin bs=64 skip=$offset count=$cnt 
 			    copied=1
 			fi
-			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
+			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt 
 			mv $TMPDIR/$CHAN-frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
