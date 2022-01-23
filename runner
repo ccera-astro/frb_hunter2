@@ -3,6 +3,7 @@ cat >helptmp$$ <<"!EOF!"
 Usage: runner --device <dev> --longitude <long> --decln <dec> --antenna <ant>
     [--srate <rate>] [--frequency <freq>] [--save <savedir>] [--chan <chname>]
     [--temp <tmpdir>] [--threshold <thresh>] [--seconds <secs>]
+    [--fftrate <rate>]
 !EOF!
 SRATE=10e6
 RFGAIN=30
@@ -16,6 +17,7 @@ THRESH=8.5
 ANT=None
 TMPDIR=$HOME
 SECONDS=600
+FFTRATE=30
 if [ $# -le 0 ]
 then
 	cat helptmp$$
@@ -78,6 +80,10 @@ do
 			rm -f helptmp$$
 			exit 0
 			;;
+	    --fftrate)
+			FFTRATE=$2
+			shift 2
+			;;
 		*)
 			echo "Unknown argument: $1"
 			rm -f helptmp$$
@@ -118,7 +124,7 @@ do
 	#  time-domain resolution.
 	#
 	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds $SECONDS \
-	  --prefix $TMPDIR/$CHAN- --antenna $ANT
+	  --prefix $TMPDIR/$CHAN- --antenna $ANT --fftrate $FFTRATE
 	trap 'exit' 1 2 3 4 5 6 7 8 19 10 11 12 13 14 15
 	#
 	# Run a whack of trial-dedispersions, looking for a pulse

@@ -169,7 +169,7 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    n: int((samp_rate/4096)/15)
+    n: int((samp_rate/4096)/fftrate)
     type: complex
     vlen: '4096'
   states:
@@ -270,13 +270,20 @@ blocks:
       \      self.lasttime = time.time()\n        self.fftbuf = np.zeros(self.fftsize,\
       \ dtype=np.float32)\n        self.fftcnt = 0\n        self.winpower = sum([x*x\
       \ for x in window.blackmanharris(self.fftsize)])\n        self.scale = 20*math.log10(self.fftsize)\
-      \ - 10*math.log10(self.winpower/self.fftsize)\n        \n\n    def work(self,\
-      \ input_items, output_items):\n        \"\"\"Log output of LogPwrFFT\"\"\"\n\
-      \        now = time.time()\n        for x in input_items[0]:\n            self.fftbuf\
-      \ = np.add(self.fftbuf, x)\n            self.fftcnt += 1\n        if ((now -\
-      \ self.lasttime) > 120):\n            self.lasttime = now\n            fp =\
-      \ open(self.logfile, \"w\")\n            #\n            # Compute (linear) average\n\
-      \            #\n            self.fftbuf = np.divide(self.fftbuf,self.fftcnt)\n\
+      \ - 10*math.log10(self.winpower/self.fftsize)\n        self.set_output_multiple(3)\n\
+      \        \n\n    def work(self, input_items, output_items):\n        \"\"\"\
+      Log output of FFTT\"\"\"\n        #\n        # We keep the FFT power data in\
+      \ the linear domain until\n        #  just before we log it.\n        #\n  \
+      \      #\n        # Average-in all the input FFT buffers we've been handed\n\
+      \        #\n        # We are called at an average rate of 10-20Hz, and with\
+      \ logging\n        #   every two minutes, that's over 1000 samples in the averaging\n\
+      \        #   buffer.\n        #\n        now = time.time()\n        for x in\
+      \ input_items[0]:\n            self.fftbuf = np.add(self.fftbuf, x)\n      \
+      \      self.fftcnt += 1\n        \n        #\n        # If time to log, compute\
+      \ the average, then convert to\n        #    10Log10 and apply scaling\n   \
+      \     #\n        if ((now - self.lasttime) > 120):\n            self.lasttime\
+      \ = now\n            fp = open(self.logfile, \"w\")\n            #\n       \
+      \     # Compute (linear) average\n            #\n            self.fftbuf = np.divide(self.fftbuf,self.fftcnt)\n\
       \            \n            #\n            # Convert to 10log10\n           \
       \ #\n            self.fftbuf = np.log10(self.fftbuf)\n            self.fftbuf\
       \ = np.multiply(self.fftbuf,10.0)\n            \n            #\n           \
@@ -343,6 +350,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1168, 44.0]
+    rotation: 0
+    state: true
+- name: fftrate
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Rate of monitor FFT
+    short_id: ''
+    type: intx
+    value: '15'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [728, 692.0]
     rotation: 0
     state: true
 - name: fftsize
