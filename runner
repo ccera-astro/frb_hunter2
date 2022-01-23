@@ -118,7 +118,7 @@ do
 	#  time-domain resolution.
 	#
 	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds $SECONDS \
-	  --prefix $TMPDIR/$CHAN-
+	  --prefix $TMPDIR/$CHAN- --antenna $ANT
 	trap 'exit' 1 2 3 4 5 6 7 8 19 10 11 12 13 14 15
 	#
 	# Run a whack of trial-dedispersions, looking for a pulse

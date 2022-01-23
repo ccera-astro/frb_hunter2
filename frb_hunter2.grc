@@ -76,6 +76,23 @@ blocks:
     coordinate: [944, 644.0]
     rotation: 0
     state: true
+- name: antenna
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Antenna selector
+    short_id: ''
+    type: str
+    value: '"RX2"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 580.0]
+    rotation: 0
+    state: true
 - name: blocks_complex_to_mag_squared_0
   id: blocks_complex_to_mag_squared
   parameters:
@@ -152,7 +169,7 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    n: int((samp_rate/4096)/10)
+    n: int((samp_rate/4096)/15)
     type: complex
     vlen: '4096'
   states:
@@ -432,7 +449,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    ant0: ''
+    ant0: antenna
     ant1: ''
     ant10: ''
     ant11: ''
