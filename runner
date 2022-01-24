@@ -16,7 +16,7 @@ LONG=None
 THRESH=8.5
 ANT=None
 TMPDIR=$HOME
-SECONDS=600
+SECS=600
 FFTRATE=30
 if [ $# -le 0 ]
 then
@@ -72,7 +72,7 @@ do
 			shift 2
 			;;
 		--seconds)
-			SECONDS=$2
+			SECS=$2
 			shift 2
 			;;
 		--help)
@@ -123,7 +123,7 @@ do
 	#  selected channel rate.  The channel-rate usually allows for 130-150usec
 	#  time-domain resolution.
 	#
-	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds $SECONDS \
+	frb_hunter2.py --device "$DEVICE" --rfgain $RFGAIN --srate $SRATE --freq $FREQ --seconds $SECS \
 	  --prefix $TMPDIR/$CHAN- --antenna $ANT --fftrate $FFTRATE
 	trap 'exit' 1 2 3 4 5 6 7 8 19 10 11 12 13 14 15
 	#
@@ -140,7 +140,7 @@ do
 	    cnt=`expr $CRATE '*' 2`
 
 		frb_bulk_analyser.py --declination $decln --infile $TMPDIR/$CHAN-frb_tmp.dat --srate $CRATE \
-		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds $SECONDS --longitude $LONG
+		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds $SECS --longitude $LONG
 		if [ -e $TMPDIR/$CHAN-frb-event.json ]
 		then
 		    if [ $sd = 0.0 ]

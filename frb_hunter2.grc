@@ -282,17 +282,21 @@ blocks:
       \      self.fftcnt += 1\n        \n        #\n        # If time to log, compute\
       \ the average, then convert to\n        #    10Log10 and apply scaling\n   \
       \     #\n        if ((now - self.lasttime) > 120):\n            self.lasttime\
-      \ = now\n            fp = open(self.logfile, \"w\")\n            #\n       \
-      \     # Compute (linear) average\n            #\n            self.fftbuf = np.divide(self.fftbuf,self.fftcnt)\n\
-      \            \n            #\n            # Convert to 10log10\n           \
-      \ #\n            self.fftbuf = np.log10(self.fftbuf)\n            self.fftbuf\
-      \ = np.multiply(self.fftbuf,10.0)\n            \n            #\n           \
-      \ # Subtract-out the scale factor\n            #\n            self.fftbuf =\
-      \ np.subtract(self.fftbuf, self.scale)\n            \n            for i in range(0,self.fftsize):\n\
-      \                fp.write(\"%.3f\" % self.fftbuf[i])\n                if (i\
-      \ < self.fftsize-1):\n                    fp.write(\",\")\n            fp.write(\"\
-      \\n\")\n            self.fftcnt = 0\n            self.fftbuf = np.zeros(self.fftsize,dtype=np.float32)\n\
-      \            fp.close()\n            \n            \n            \n        return\
+      \ = now\n            fp = open(self.logfile, \"w\")\n            \n        \
+      \    #\n            # Provides protection against (unlikely)\n            #\
+      \  self.fftbuf being 0 after all those adds.\n            #\n            self.fftbuf\
+      \ = np.add(self.fftbuf, 1.0e-14)\n            \n            \n            #\n\
+      \            # Compute (linear) average\n            #\n            self.fftbuf\
+      \ = np.divide(self.fftbuf,self.fftcnt)\n            \n            #\n      \
+      \      # Convert to 10log10\n            #\n            self.fftbuf = np.log10(self.fftbuf)\n\
+      \            self.fftbuf = np.multiply(self.fftbuf,10.0)\n            \n   \
+      \         #\n            # Subtract-out the scale factor\n            #\n  \
+      \          self.fftbuf = np.subtract(self.fftbuf, self.scale)\n            \n\
+      \            for i in range(0,self.fftsize):\n                fp.write(\"%.3f\"\
+      \ % self.fftbuf[i])\n                if (i < self.fftsize-1):\n            \
+      \        fp.write(\",\")\n            fp.write(\"\\n\")\n            self.fftcnt\
+      \ = 0\n            self.fftbuf = np.zeros(self.fftsize,dtype=np.float32)\n \
+      \           fp.close()\n            \n            \n            \n        return\
       \ len(input_items[0])\n"
     affinity: ''
     alias: ''
