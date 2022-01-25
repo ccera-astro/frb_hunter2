@@ -26,7 +26,7 @@ def write_rate(fn, rate):
 
 
 def compute_crate(fftsize,srate):
-    rates = [x for x in range(8700,2500,-25)]
+    rates = [x for x in range(10250,2500,-25)]
     for r in rates:
         d = float(srate)/float(fftsize)
         d /= float(r)
