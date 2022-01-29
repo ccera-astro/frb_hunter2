@@ -132,23 +132,54 @@ do
 	nzero=0
 	ndisp=0
 	tslist="None"
+	jslist="None"
 	copied=0
-	for sd in 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0
+	maxsigma=0
+	maxsd=-1
+	
+	#
+	# Delay increments for the analyser--a proxy for DM
+	#
+	for sd in 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0
 	do
+	    #
+	    # Remove previous temporary .json file
+	    #
 	    rm -f $TMPDIR/$CHAN-frb-event.json
+	    
+	    #
+	    # Determine channel-rate and the 'cnt' that will be used in 'dd'
+	    #
 	    CRATE=`cat frb_rate.txt`
 	    cnt=`expr $CRATE '*' 2`
+	    
 
+        #
+        # Call the bulk analyser, which applies de-dispersion, and then
+        #  looks for a pulse...
+        #
 		frb_bulk_analyser.py --declination $decln --infile $TMPDIR/$CHAN-frb_tmp.dat --srate $CRATE \
 		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds $SECS --longitude $LONG
+		  
+		#
+		# If there's a .json 'event' file, save some of the data
+		#
 		if [ -e $TMPDIR/$CHAN-frb-event.json ]
 		then
+		
+		    #
+		    # 0-delay (no dispersion) is a special case
+		    #
 		    if [ $sd = 0.0 ]
 		    then
 		        nzero=`expr $nzero + 1`
 		    else
 		        ndisp=`expr $ndisp + 1`
 		    fi
+		    
+		    #
+		    # Create a timestamp for the SAVE files
+		    #
 			ts=`date -u +%Y%m%d-%H%M%S`
 		    tslist="$tslist $ts"
 			count=`awk '/scount/ {gsub(",", "", $2); print $2}' $TMPDIR/$CHAN-frb-event.json`
@@ -156,16 +187,33 @@ do
 			#
 			# Make trimmed copies of the filter-bank data, and the dedispersed data
 			#
+			#
+			# We only need ONE trimmed copy of the raw filterbank file
+			#
 			if [ $copied = 0 ]
 			then
 			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$ts.bin bs=64 skip=$offset count=$cnt 
 			    copied=1
 			fi
+			sigma=`awk '/sigma/ {gsub(",", "", $2); printf ("%d", $2)}' $TMPDIR/$CHAN-frb-event.json`
+			#
+			# Take note of where the MAX sigma value is
+			#
+			if [ $maxsigma -gt $sigma ]
+			then
+				maxsigma=$sigma
+				maxsd=$sd
+			fi
+		    #
+		    # Make "SAVE" copies of the dedispersed saved pulse ahd the
+		    #  corresponding .json file
+		    #
 			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt 
 			mv $TMPDIR/$CHAN-frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
-	if [ $ndisp -le 0 ]
+
+	if [ $ndisp -le 0 -o $maxsd = 0.0 ]
 	then
 		for f in $tslist
 		do
