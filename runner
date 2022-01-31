@@ -199,7 +199,7 @@ do
 			#
 			# Take note of where the MAX sigma value is
 			#
-			if [ $maxsigma -gt $sigma ]
+			if [ $sigma -gt $maxsigma ]
 			then
 				maxsigma=$sigma
 				maxsd=$sd
