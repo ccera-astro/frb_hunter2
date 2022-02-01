@@ -136,6 +136,8 @@ do
 	copied=0
 	maxsigma=0
 	maxsd=-1
+	minsigma=9999
+	minsd=-1
 	
 	#
 	# Delay increments for the analyser--a proxy for DM
@@ -204,6 +206,11 @@ do
 				maxsigma=$sigma
 				maxsd=$sd
 			fi
+			if [ $sigma -lt $minsigma ]
+			then
+				minsigma=$sigma
+				minsd=$sd
+			fi
 		    #
 		    # Make "SAVE" copies of the dedispersed saved pulse ahd the
 		    #  corresponding .json file
@@ -212,7 +219,7 @@ do
 			mv $TMPDIR/$CHAN-frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
-    echo NUM DISPERSED: $ndisp MAX SIGMA: $maxsigma MAX SD: $maxsd
+    echo NUM DISPERSED: $ndisp MAX SIGMA: $maxsigma MAX SD: $maxsd MIN SIGMA: $minsigma MIN SD: $minsd
 	if [ $ndisp -le 0 -o $maxsd = 0.0 ]
 	then
 		for f in $tslist
