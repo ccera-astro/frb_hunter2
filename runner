@@ -9,7 +9,7 @@ SRATE=10e6
 RFGAIN=30
 CHAN=FRB0
 FREQ=1420.4058e6
-SAVE=$HOME/ra_data
+SAVEDIR=$HOME/ra_data
 DEVICE=None
 DECLN=None
 LONG=None
@@ -194,8 +194,8 @@ do
 			#
 			if [ $copied = 0 ]
 			then
-				echo Moving $TMPDIR/$CHAN-frb.tmp.dat to $SAVE/$CHAN/$ts.bin
-			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$CHAN/$ts.bin bs=64 skip=$offset count=$cnt 
+				echo Moving $TMPDIR/$CHAN-frb.tmp.dat to $SAVEDIR/$ts.bin
+			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVEDIR/$ts.bin bs=64 skip=$offset count=$cnt 
 			    copied=1
 			fi
 			sigma=`awk '/sigma/ {gsub(",", "", $2); printf ("%d", $2)}' $TMPDIR/$CHAN-frb-event.json`
@@ -216,10 +216,10 @@ do
 		    # Make "SAVE" copies of the dedispersed saved pulse ahd the
 		    #  corresponding .json file
 		    #
-		    echo Moving $TMPDIR/$CHAN-frb_dedisp.dat $SAVE/$CHAN/$ts-$sd-dedisp.bin
-			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$CHAN/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
-			echo Moving $TMDIR/$CHAN-frb-event.json to $SAVE/$ts-$sd.json
-			mv $TMPDIR/$CHAN-frb-event.json $SAVE/$ts-$sd.json
+		    echo Moving $TMPDIR/$CHAN-frb_dedisp.dat $SAVEDIR/$ts-$sd-dedisp.bin
+			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVEDIR/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
+			echo Moving $TMDIR/$CHAN-frb-event.json to $SAVEDIR/$ts-$sd.json
+			mv $TMPDIR/$CHAN-frb-event.json $SAVEDIR/$ts-$sd.json
 		fi
 	done
 	if [ $ndisp -gt 0 ]
@@ -231,8 +231,8 @@ do
 	then
 		for f in $tslist
 		do
-		    echo Removing $SAVE/$CHAN/${f}*
-			rm -f $SAVE/$CHAN/${f}*
+		    echo Removing $SAVEDIR/${f}*
+			rm -f $SAVEDIR/${f}*
 		done
 	fi
 	sleep 10
