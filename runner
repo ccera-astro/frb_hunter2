@@ -194,7 +194,8 @@ do
 			#
 			if [ $copied = 0 ]
 			then
-			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$ts.bin bs=64 skip=$offset count=$cnt 
+				echo Moving $TMPDIR/$CHAN-frb.tmp.dat to $SAVE/$CHAN/$ts.bin
+			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVE/$CHAN/$ts.bin bs=64 skip=$offset count=$cnt 
 			    copied=1
 			fi
 			sigma=`awk '/sigma/ {gsub(",", "", $2); printf ("%d", $2)}' $TMPDIR/$CHAN-frb-event.json`
@@ -215,16 +216,23 @@ do
 		    # Make "SAVE" copies of the dedispersed saved pulse ahd the
 		    #  corresponding .json file
 		    #
-			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt 
+		    echo Moving $TMPDIR/$CHAN-frb_dedisp.dat $SAVE/$CHAN/$ts-$sd-dedisp.bin
+			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVE/$CHAN/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
+			echo Moving $TMDIR/$CHAN-frb-event.json to $SAVE/$ts-$sd.json
 			mv $TMPDIR/$CHAN-frb-event.json $SAVE/$ts-$sd.json
 		fi
 	done
-    echo NUM DISPERSED: $ndisp MAX SIGMA: $maxsigma MAX SD: $maxsd MIN SIGMA: $minsigma MIN SD: $minsd
+	if [ $ndisp -gt 0 ]
+	then
+	    echo "*****" `date -u  +%Y%m%d-%H%M%S` "*****"
+        echo NUM DISPERSED: $ndisp MAX SIGMA: $maxsigma MAX SD: $maxsd MIN SIGMA: $minsigma MIN SD: $minsd
+    fi
 	if [ $ndisp -le 0 -o $maxsd = 0.0 ]
 	then
 		for f in $tslist
 		do
-			rm -f $SAVE/${f}*
+		    echo Removing $SAVE/$CHAN/${f}*
+			rm -f $SAVE/$CHAN/${f}*
 		done
 	fi
 	sleep 10
