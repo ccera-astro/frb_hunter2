@@ -218,7 +218,7 @@ do
 		    #
 		    echo Moving $TMPDIR/$CHAN-frb_dedisp.dat $SAVEDIR/$ts-$sd-dedisp.bin
 			dd if=$TMPDIR/$CHAN-frb_dedisp.dat of=$SAVEDIR/$ts-$sd-dedisp.bin bs=4 skip=$offset count=$cnt
-			echo Moving $TMDIR/$CHAN-frb-event.json to $SAVEDIR/$ts-$sd.json
+			echo Moving $TMPDIR/$CHAN-frb-event.json to $SAVEDIR/$ts-$sd.json
 			mv $TMPDIR/$CHAN-frb-event.json $SAVEDIR/$ts-$sd.json
 		fi
 	done
