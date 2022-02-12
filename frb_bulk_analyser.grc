@@ -586,7 +586,8 @@ blocks:
       max\"] = float(mx)\n            evdict[\"sigma\"] = float(sigma)\n         \
       \   evdict[\"lmst\"] = self.cur_sidereal(self.longitude)\n            evdict[\"\
       srate\"] = int(self.srate)\n            evdict[\"scount\"] = int(self.scount+mxa)\n\
-      \            evdict[\"sdelay\"] = self.sdelay\n            fp.write(json.dumps(evdict,indent=4))\n\
+      \            evdict[\"sdelay\"] = self.sdelay\n            evdict[\"maxdelay\"\
+      ] = self.sdelay * 16.0 * (1.0/ self.srate)\n            fp.write(json.dumps(evdict,indent=4))\n\
       \            fp.close()\n        self.scount += l\n        return l\n    \n\
       \    # Given longitude(decimal degrees as a float)\n    #\n    # Return the\
       \ current sidereal time as a string with\n    #  \",\" separated tokens\n  \
@@ -607,14 +608,14 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     prefix: prefix
-    sdelay: '0.0'
+    sdelay: sdelay
     seconds: seconds
     srate: samp_rate
     threshold: threshold
     tstamp: os.stat(infile).st_mtime
   states:
     _io_cache: ('FRB Pulse Finder', 'blk', [('threshold', '4.0'), ('srate', '6250'),
-      ('tstamp', '1643600608.764538'), ('seconds', '600'), ('longitude', '-76.108'),
+      ('tstamp', '1644689644.5139067'), ('seconds', '600'), ('longitude', '-76.108'),
       ('declination', '-99.0'), ('prefix', "'./'"), ('sdelay', '0.0')], [('0', 'float',
       1)], [], 'FRB Pulse finder - a simple multiply const', ['declination', 'longitude',
       'prefix', 'sdelay', 'seconds', 'srate', 'threshold', 'tstamp'])
