@@ -194,8 +194,8 @@ do
 			#
 			if [ $copied = 0 ]
 			then
-				echo Moving $TMPDIR/$CHAN-frb.tmp.dat to $SAVEDIR/$ts.bin
-			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVEDIR/$ts.bin bs=64 skip=$offset count=$cnt 
+				echo Moving $TMPDIR/$CHAN-frb.tmp.dat to $SAVEDIR/$ts-raw.bin
+			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVEDIR/$ts-raw.bin bs=64 skip=$offset count=$cnt 
 			    copied=1
 			fi
 			sigma=`awk '/sigma/ {gsub(",", "", $2); printf ("%d", $2)}' $TMPDIR/$CHAN-frb-event.json`
