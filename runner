@@ -142,7 +142,7 @@ do
 	#
 	# Delay increments for the analyser--a proxy for DM
 	#
-	for sd in 0.0 0.5 1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0 10.5 11.0
+	for sd in 0.0 1.0 2.0 3.0 4.0 4.5 5.0 5.5 6.0 6.5 7.0 7.5 8.0 8.5 9.0 9.5 10.0 10.5 11.0 11.5 12.0
 	do
 	    #
 	    # Remove previous temporary .json file
@@ -250,8 +250,9 @@ do
 	else
 		frb_raw_to_fb.py --infile $rawsave --outfile $SAVEDIR/$rawts-raw.fb --freq $FREQ --bandwidth $SRATE \
 			--decln $DECLN --json $SAVEDIR/$maxts-$maxsd.json
+		process_frb_dedisp.py --infile $SAVEDIR/$maxts-$maxsd-dedisp.bin --srate $CRATE >$SAVEDIR/$maxts-$maxsd.plt
 	fi
 	
-	sleep 10
+	sleep 5
 done
 
