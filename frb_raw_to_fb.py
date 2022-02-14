@@ -4,6 +4,7 @@ import os
 import sys
 import struct
 import calendar
+import json
 
 import argparse
 
@@ -226,31 +227,38 @@ def main():
     parser.add_argument("--freq", type=float, help="Center Frequency", required=True)
     parser.add_argument("--bandwidth", type=float, help="Bandwidth", required=True)
     parser.add_argument("--decln", type=float, help="Declination", required=True)
-    parser.add_argument("--ra", type=float, help="Right Ascension", required=True)
     parser.add_argument("--outfile", type=str, help="Output file", required=True)
-    parser.add_argument("--evtime", type=str, help="Event time", required=True)
-    parser.add_argument("--offset", type=float, help="Event time offset", default=0.0)
+    parser.add_argument("--json", type=str, help="Housekeeping JSON file", required=True)
+    parser.add_argument("--offset", type=float, help="Event time offset", default=1.0)
     
 
     args = parser.parse_args()
+    
+    #
+    # Load JSON file that contains lots of meaty things
+    #
+    jfp = open(args.json, "r")
+    jdict = json.load(jfp)
+    jfp.close()
     
     #
     # Parse the event time:
     #
     # YYYY MM DD hh:mm:ss
     #
-    evtoks = args.evtime.split(" ")
+    evtoks = jdict["date"]
     ltp = time.gmtime()
     
     tm_year = int(evtoks[0])
     tm_mon = int(evtoks[1])
     tm_mday = int(evtoks[2])
     
-    todtoks = evtoks[3].split(":")
+    
+    todtoks = jdict["evtime"].split(":")
     
     tm_hour = int(todtoks[0])
     tm_min = int(todtoks[1])
-    tm_sec = int(todtoks[2])
+    tm_sec = int(float(todtoks[2]))
     
     #
     # Convert into struct_time
@@ -272,6 +280,18 @@ def main():
 
 
     #
+    # Determine LMST from input JSON
+    # We use LMST as RA, because our site uses meridan-transit
+    #   antenna.
+    #
+    #
+    lmst_toks = jdict["lmst"]
+    lmst_toks = lmst_toks.split(",")
+    lmst = float(lmst_toks[0])
+    lmst += float(lmst_toks[1])/60.0
+    lmst += float(lmst_toks[2])/3600.0
+    
+    #
     # Bring in the input file as 32-bit floats and make into
     #  1D NUMPY array.
     #
@@ -288,7 +308,7 @@ def main():
     #
     # We have enough for the SIGPROC header
     #
-    write_fb_header(args.outfile, ofp, args.srate, args.freq, args.bandwidth, args.decln, args.ra, evutime)
+    write_fb_header(args.outfile, ofp, args.srate, args.freq, args.bandwidth, args.decln, lmst, evutime)
 
 
     #

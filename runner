@@ -170,14 +170,17 @@ do
 		then
 		
 		    #
-		    # 0-delay (no dispersion) is a special case
+		    # lower dispersion is a special case
 		    #
-		    if [ $sd = 0.0 ]
-		    then
-		        nzero=`expr $nzero + 1`
-		    else
-		        ndisp=`expr $ndisp + 1`
-		    fi
+		    case $sd in
+				0.0|0.5|1.0|1.5|2.0|2.5|3.0|3.5)
+					nzero=`expr $nzero + 1`
+					;;
+				*)
+				ndisp=`expr $ndisp + 1`
+				;;
+			esac
+				
 		    
 		    #
 		    # Create a timestamp for the SAVE files
@@ -195,7 +198,9 @@ do
 			if [ $copied = 0 ]
 			then
 				echo Moving $TMPDIR/$CHAN-frb.tmp.dat to $SAVEDIR/$ts-raw.bin
-			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVEDIR/$ts-raw.bin bs=64 skip=$offset count=$cnt 
+			    dd if=$TMPDIR/$CHAN-frb_tmp.dat of=$SAVEDIR/$ts-raw.bin bs=64 skip=$offset count=$cnt
+			    rawsave=$SAVEDIR/$ts-raw.bin
+			    rawts=$ts
 			    copied=1
 			fi
 			sigma=`awk '/sigma/ {gsub(",", "", $2); printf ("%d", $2)}' $TMPDIR/$CHAN-frb-event.json`
@@ -206,6 +211,7 @@ do
 			then
 				maxsigma=$sigma
 				maxsd=$sd
+				maxts=$ts
 			fi
 			if [ $sigma -lt $minsigma ]
 			then
@@ -222,19 +228,30 @@ do
 			mv $TMPDIR/$CHAN-frb-event.json $SAVEDIR/$ts-$sd.json
 		fi
 	done
-	if [ $ndisp -gt 0 ]
-	then
-	    echo "*****" `date -u  +%Y%m%d-%H%M%S` "*****"
-        echo NUM DISPERSED: $ndisp MAX SIGMA: $maxsigma MAX SD: $maxsd MIN SIGMA: $minsigma MIN SD: $minsd
-    fi
-	if [ $ndisp -le 0 -o $maxsd = 0.0 ]
+	sdbig=`echo $maxsd |awk '{if ($1 > 3.5) print "True"; else print "False"}'`
+	#
+	# Looks like either there's no dispersed peaks, or all of them are
+	#  below our "interesting" threshold
+	#
+	# Ditch the files
+	#
+	if [ $ndisp -le 0 -o $sdbig = False ]
 	then
 		for f in $tslist
 		do
 		    echo Removing $SAVEDIR/${f}*
 			rm -f $SAVEDIR/${f}*
 		done
+	#
+	# Else things are "interesting"
+	#
+	# Create a SIGPROC FB file from the raw FB input
+	#
+	else
+		frb_raw_to_fb.py --infile $rawsave --outfile $SAVEDIR/$rawts-raw.fb --freq $FREQ --bandwidth $SRATE \
+			--decln $DECLN --json $SAVEDIR/$maxts-$maxsd.json
 	fi
+	
 	sleep 10
 done
 
