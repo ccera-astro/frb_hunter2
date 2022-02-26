@@ -248,7 +248,7 @@ do
 	# Create a SIGPROC FB file from the raw FB input
 	#
 	else
-		frb_raw_to_fb.py --infile $rawsave --outfile $SAVEDIR/$rawts-raw.fb --freq $FREQ --srate $SRATE \
+		frb_raw_to_fb.py --infile $rawsave --outfile $SAVEDIR/$rawts-raw.fb --freq $FREQ --srate $CRATE --bandwidth $SRATE \
 			--decln $DECLN --json $SAVEDIR/$maxts-$maxsd.json
 		process_frb_dedisp.py --infile $SAVEDIR/$maxts-$maxsd-dedisp.bin --srate $CRATE >$SAVEDIR/$maxts-$maxsd.plt
 	fi
