@@ -3,7 +3,7 @@ cat >helptmp$$ <<"!EOF!"
 Usage: runner --device <dev> --longitude <long> --decln <dec> --antenna <ant>
     [--srate <rate>] [--frequency <freq>] [--save <savedir>] [--chan <chname>]
     [--temp <tmpdir>] [--threshold <thresh>] [--seconds <secs>]
-    [--fftrate <rate>]
+    [--fftrate <rate>] [--rundir dir]
 !EOF!
 SRATE=10e6
 RFGAIN=30
@@ -18,6 +18,7 @@ ANT=None
 TMPDIR=$HOME
 SECS=600
 FFTRATE=30
+RUNDIR="."
 if [ $# -le 0 ]
 then
 	cat helptmp$$
@@ -84,6 +85,10 @@ do
 			FFTRATE=$2
 			shift 2
 			;;
+	    --rundir)
+			RUNDIR=$2
+			shift 2
+			;;
 		*)
 			echo "Unknown argument: $1"
 			rm -f helptmp$$
@@ -104,6 +109,7 @@ do
 done
 
 
+cd $RUNDIR
 while true
 do
     #
