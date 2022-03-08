@@ -246,7 +246,7 @@ def main():
     #
     # YYYY MM DD hh:mm:ss
     #
-    evtoks = jdict["date"]
+    evtoks = jdict["date"].split()
     ltp = time.gmtime()
     
     tm_year = int(evtoks[0])
