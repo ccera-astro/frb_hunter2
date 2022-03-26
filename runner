@@ -249,7 +249,7 @@ do
 			rm -f $SAVEDIR/${f}*
 		done
 	#
-	# Else things are "interesting"
+	# Else things are "possibly interesting"
 	#
 	# Create a SIGPROC FB file from the raw FB input
 	#
@@ -257,6 +257,18 @@ do
 		frb_raw_to_fb.py --infile $rawsave --outfile $SAVEDIR/$rawts-raw.fb --freq $FREQ --srate $CRATE --bandwidth $SRATE \
 			--decln $DECLN --json $SAVEDIR/$maxts-$maxsd.json
 		process_frb_dedisp.py --infile $SAVEDIR/$maxts-$maxsd-dedisp.bin --srate $CRATE >$SAVEDIR/$maxts-$maxsd.plt
+		
+		#
+		# Test for correlation against various curves
+		#
+		ret=`analyse_plt --infile $SAVEDIR/$maxts-$maxsd.plt --threshold 0.66`
+		if [ $ret != "Matched" ]
+		then
+			for f in $tslist
+			do
+				rm -f $SAVEDIR/${f}*
+			done
+		fi	
 	fi
 	
 	sleep 5
