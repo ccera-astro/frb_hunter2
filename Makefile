@@ -16,7 +16,7 @@ install: frb_hunter2.py frb_bulk_analyser.py
 	cp fft_logger_1.py /usr/local/bin
 	cp frb_raw_to_fb.py /usr/local/bin
 	cp process_frb_dedisp.py /usr/local/bin
-	cp analyuse_plt.py /usr/local/bin
+	cp analyse_plt.py /usr/local/bin
 
 clean:
 	rm -f frb_hunter2.py frb_bulk_analyser.py
