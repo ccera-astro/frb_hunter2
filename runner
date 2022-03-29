@@ -234,7 +234,7 @@ do
 			mv $TMPDIR/$CHAN-frb-event.json $SAVEDIR/$ts-$sd.json
 		fi
 	done
-	sdbig=`echo $maxsd |awk '{if ($1 > 8.0) print "True"; else print "False"}'`
+	sdbig=`echo $maxsd |awk '{if ($1 >= 8.0) print "True"; else print "False"}'`
 	#
 	# Looks like either there's no dispersed peaks, or all of them are
 	#  below our "interesting" threshold

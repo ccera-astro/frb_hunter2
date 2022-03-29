@@ -45,6 +45,7 @@ parser = argparse.ArgumentParser(description="Analyse residual FRB pulse plot")
 
 parser.add_argument("--infile", type=str, help="Input filename", required=True)
 parser.add_argument("--threshold", type=float, help="Correlation threshold", default=0.6)
+parser.add_argument("--debug", type=bool, action='store_true', help="Enable debug", default=False)
 
 args = parser.parse_args()
 
@@ -88,9 +89,18 @@ curve4 = numpy.divide(curve4, numpy.max(curve4))
 
 
 
+#
+# Grab data from the .plt file
+#
 fp = open(args.infile, "r")
 lines = fp.readlines()
+fp.close()
 
+#
+# Go through the lines of data, and build a list
+#  with the profile points.  The points are in the
+#  2nd column, and the first column is just time offset.
+#
 analysed = []
 num = len(lines)
 for l in lines:
@@ -98,12 +108,18 @@ for l in lines:
     analysed.append(float(toks[1]))
 
 #
-# Pick out the middle 200 items
+# Pick out the middle 200 items from the profile data--
+#  The code saves a 2-second "window" of data, but really
+#   the pulse should be in the middle somewhere, and we
+#   sample at around 12kHz
 #
 analysed = analysed[int(num/2)-100:int(num/2)+100]
 
 #
 # Normalize and adjust
+#
+# We're trying to adjust the pulse profile to be at the same
+#  scale as the curves we're testing against
 #
 analysed = numpy.divide(analysed, numpy.max(analysed))
 analysed = interpolator(analysed, 2)
@@ -112,16 +128,20 @@ analysed = numpy.divide(analysed, numpy.max(analysed))
 
 
 #
-# Compute pearson correlation coefficients
+# Compute PearsonR correlation coefficients
 #
 coeffs = []
-coeffs.append(pearsonr(analysed,curve)[0])
+coeffs.append(pearsonr(analysed, curve)[0])
 coeffs.append(pearsonr(analysed, curve2)[0])
 coeffs.append(pearsonr(analysed, curve3)[0])
 coeffs.append(pearsonr(analysed, curve4)[0])
 
-#print (coeffs)
+if (args.debug == True):
+	print (coeffs)
 
+#
+# Go through each coeff, testing for match condition
+#
 matched = False
 for c in coeffs:
     if (c >= args.threshold):
@@ -133,13 +153,13 @@ else:
     print ("No match")
 
 
-"""
-curve.tofile('curve.dat', sep="\n")
-curve2.tofile('curve2.dat', sep="\n")
-curve3.tofile('curve3.dat', sep="\n")
-curve4.tofile('curve4.dat', sep="\n")
-analysed.tofile('analysed.dat', sep="\n")
-"""
+if (args.debug == True):
+	curve.tofile('curve.dat', sep="\n")
+	curve2.tofile('curve2.dat', sep="\n")
+	curve3.tofile('curve3.dat', sep="\n")
+	curve4.tofile('curve4.dat', sep="\n")
+	analysed.tofile('analysed.dat', sep="\n")
+
 
 
 
