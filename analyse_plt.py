@@ -7,6 +7,7 @@ from scipy.stats import moyal
 from scipy.stats import pearsonr
 import math
 import argparse
+import matplotlib.pyplot as plt
 
 def interpolator(arr,factor):
     
@@ -45,7 +46,10 @@ parser = argparse.ArgumentParser(description="Analyse residual FRB pulse plot")
 
 parser.add_argument("--infile", type=str, help="Input filename", required=True)
 parser.add_argument("--threshold", type=float, help="Correlation threshold", default=0.6)
-parser.add_argument("--debug", type=bool, action='store_true', help="Enable debug", default=False)
+parser.add_argument("--debug", action='store_true', help="Enable debug", default=False)
+parser.add_argument("--title", type=str, help="Plot title", default="FRB profile")
+parser.add_argument("--crate", type=float, help="Channel rate", default=12500.0)
+
 
 args = parser.parse_args()
 
@@ -137,7 +141,7 @@ coeffs.append(pearsonr(analysed, curve3)[0])
 coeffs.append(pearsonr(analysed, curve4)[0])
 
 if (args.debug == True):
-	print (coeffs)
+    print (coeffs)
 
 #
 # Go through each coeff, testing for match condition
@@ -154,13 +158,32 @@ else:
 
 
 if (args.debug == True):
-	curve.tofile('curve.dat', sep="\n")
-	curve2.tofile('curve2.dat', sep="\n")
-	curve3.tofile('curve3.dat', sep="\n")
-	curve4.tofile('curve4.dat', sep="\n")
-	analysed.tofile('analysed.dat', sep="\n")
-
-
-
-
-
+    start = 0.0
+    tincr = 1.0/(args.crate*2)
+    tincr *= 1000.0
+    xaxis = [x for x in numpy.arange(0,tincr*len(analysed),tincr)]
+    mx = numpy.argmax(coeffs)
+    plt.plot(xaxis,curve,label="Landau Curve: 1", linewidth=2.5 if mx == 0 else 1.0,
+        linestyle="dashed" if mx == 0 else "solid")
+        
+    plt.plot(xaxis,curve2,label="Landau Curve: 2", linewidth=2.5 if mx == 1 else 1.0,
+        linestyle="dashed" if mx == 1 else "solid")
+        
+    plt.plot(xaxis,curve3,label="Landau Curve: 3", linewidth=2.5 if mx == 2 else 1.0,
+        linestyle="dashed" if mx == 2 else "solid")
+        
+    plt.plot(xaxis,curve4,label="Landau Curve: 4", linewidth=2.5 if mx == 3 else 1.0,
+        linestyle="dashed" if mx == 3 else "solid")
+        
+    plt.plot(xaxis,analysed,label="Burst")
+    plt.xlabel("Time (msec)")
+    plt.ylabel("Normalized magnitude")
+    plt.title(args.title)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+    #curve.tofile('curve.dat', sep="\n")
+    #curve2.tofile('curve2.dat', sep="\n")
+    #curve3.tofile('curve3.dat', sep="\n")
+    #urve4.tofile('curve4.dat', sep="\n")
+    #analysed.tofile('analysed.dat', sep="\n")

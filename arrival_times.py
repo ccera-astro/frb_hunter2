@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(description="Extract arrival times across the F
 parser.add_argument("--infile", type=str, help="Input filename", required=True)
 parser.add_argument("--chans", type=int, help="Number of bins in FB", default=16)
 parser.add_argument("--crate", type=float, help="Channel sample rate", default=12500.0)
+parser.add_argument("--title", type=str, help="Plot title", default="Channel powers")
 
 args = parser.parse_args()
 
@@ -39,7 +40,8 @@ for c in range(0,args.chans):
         yaxis.append(a2[r][c]+c*0.001)
     plt.plot(xaxis,yaxis,label="Ch:%d" % c)
 plt.xlabel("Time (msec)")
-plt.title("Channel powers")
+plt.grid(True)
+plt.title(args.title)
 plt.legend()
 plt.show()
     
