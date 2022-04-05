@@ -163,16 +163,16 @@ if (args.debug == True):
     tincr *= 1000.0
     xaxis = [x for x in numpy.arange(0,tincr*len(analysed),tincr)]
     mx = numpy.argmax(coeffs)
-    plt.plot(xaxis,curve,label="Landau Curve: 1", linewidth=2.5 if mx == 0 else 1.0,
+    plt.plot(xaxis,curve,label="Landau: 1 %5.2f" % coeffs[0], linewidth=2.5 if mx == 0 else 1.0,
         linestyle="dashed" if mx == 0 else "solid")
         
-    plt.plot(xaxis,curve2,label="Landau Curve: 2", linewidth=2.5 if mx == 1 else 1.0,
+    plt.plot(xaxis,curve2,label="Landau: 2 %5.2f" % coeffs[1], linewidth=2.5 if mx == 1 else 1.0,
         linestyle="dashed" if mx == 1 else "solid")
         
-    plt.plot(xaxis,curve3,label="Landau Curve: 3", linewidth=2.5 if mx == 2 else 1.0,
+    plt.plot(xaxis,curve3,label="Landau: 3 %5.2f" % coeffs[2], linewidth=2.5 if mx == 2 else 1.0,
         linestyle="dashed" if mx == 2 else "solid")
         
-    plt.plot(xaxis,curve4,label="Landau Curve: 4", linewidth=2.5 if mx == 3 else 1.0,
+    plt.plot(xaxis,curve4,label="Landau: 4 %5.2f" % coeffs[3], linewidth=2.5 if mx == 3 else 1.0,
         linestyle="dashed" if mx == 3 else "solid")
         
     plt.plot(xaxis,analysed,label="Burst")
