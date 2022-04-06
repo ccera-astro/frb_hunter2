@@ -266,7 +266,7 @@ do
 		then
 			for f in $tslist
 			do
-			    echo Second pass emoving $SAVEDIR/${f}*
+			    echo Second pass removing $SAVEDIR/${f}*
 				rm -f $SAVEDIR/${f}*
 			done
 		fi	
