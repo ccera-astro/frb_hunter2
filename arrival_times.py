@@ -18,7 +18,10 @@ parser.add_argument("--times", action="store_true", help="Show times", default=F
 args = parser.parse_args()
 
 a=numpy.fromfile(args.infile, dtype=numpy.float32)
+if (len(a) % args.chans != 0):
+	a=a[0:len(a)-(len(a) % args.chans)]
 nr=int(len(a)/args.chans)
+print ("nr is %d" % nr)
 
 middle = int(nr/2)
 start = middle-200

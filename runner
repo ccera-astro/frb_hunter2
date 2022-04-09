@@ -261,7 +261,9 @@ do
 		#
 		# Test for correlation against various curves
 		#
+		echo Running analyse_plt.py
 		ret=`analyse_plt.py --infile $SAVEDIR/$maxts-$maxsd.plt --threshold 0.66`
+		echo Analyse_plt ret $ret
 		if [ $ret != "Matched" ]
 		then
 			for f in $tslist
