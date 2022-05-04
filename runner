@@ -19,12 +19,14 @@ TMPDIR=$HOME
 SECS=600
 FFTRATE=30
 RUNDIR="."
+RUNS=100000000
 if [ $# -le 0 ]
 then
 	cat helptmp$$
 	rm -f helptmp$$
 	exit 0
 fi
+
 while [ $# -gt 0 ]
 do
 	case $1 in
@@ -89,6 +91,10 @@ do
 			RUNDIR=$2
 			shift 2
 			;;
+	    --runs)
+			RUNS=$2
+			shift 2
+			;;
 		*)
 			echo "Unknown argument: $1"
 			rm -f helptmp$$
@@ -110,8 +116,10 @@ done
 
 
 cd $RUNDIR
-while true
+runcnt=0
+while [ $runcnt -lt $RUNS ]
 do
+    runcnt=`expr $runcnt + 1`
     #
     # If declinaton specifier is apparently a file...
     #
