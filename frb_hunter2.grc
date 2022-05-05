@@ -258,45 +258,47 @@ blocks:
       \ of your block. The arguments to __init__  will\nbe the parameters. All of\
       \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
       from gnuradio import gr\nimport time\nimport math\nfrom gnuradio.fft import\
-      \ window\n\nclass blk(gr.sync_block):  # other base classes are basic_block,\
-      \ decim_block, interp_block\n    \"\"\"FFT loggert\"\"\"\n\n    def __init__(self,\
-      \ fftsize=4096, logfile=\"fft_log.out\"):  # only default arguments here\n \
-      \       \"\"\"arguments to this function show up as parameters in GRC\"\"\"\n\
-      \        gr.sync_block.__init__(\n            self,\n            name='FFT Logger',\
-      \   # will show up in GRC\n            in_sig=[(np.float32,fftsize)],\n    \
-      \        out_sig=None\n        )\n        # if an attribute with the same name\
-      \ as a parameter is found,\n        # a callback is registered (properties work,\
-      \ too).\n        self.fftsize = fftsize\n        self.logfile = logfile\n  \
-      \      self.lasttime = time.time()\n        self.fftbuf = np.zeros(self.fftsize,\
+      \ window\nimport os\nimport signal\n\nclass blk(gr.sync_block):  # other base\
+      \ classes are basic_block, decim_block, interp_block\n    \"\"\"FFT loggert\"\
+      \"\"\n\n    def __init__(self, fftsize=4096, logfile=\"fft_log.out\"):  # only\
+      \ default arguments here\n        \"\"\"arguments to this function show up as\
+      \ parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n            self,\n\
+      \            name='FFT Logger',   # will show up in GRC\n            in_sig=[(np.float32,fftsize)],\n\
+      \            out_sig=None\n        )\n        # if an attribute with the same\
+      \ name as a parameter is found,\n        # a callback is registered (properties\
+      \ work, too).\n        self.fftsize = fftsize\n        self.logfile = logfile\n\
+      \        self.lasttime = time.time()\n        self.fftbuf = np.zeros(self.fftsize,\
       \ dtype=np.float32)\n        self.fftcnt = 0\n        self.winpower = sum([x*x\
       \ for x in window.blackmanharris(self.fftsize)])\n        self.scale = 20*math.log10(self.fftsize)\
       \ - 10*math.log10(self.winpower/self.fftsize)\n        self.set_output_multiple(3)\n\
-      \        \n\n    def work(self, input_items, output_items):\n        \"\"\"\
-      Log output of FFTT\"\"\"\n        #\n        # We keep the FFT power data in\
-      \ the linear domain until\n        #  just before we log it.\n        #\n  \
-      \      #\n        # Average-in all the input FFT buffers we've been handed\n\
-      \        #\n        # We are called at an average rate of 10-20Hz, and with\
-      \ logging\n        #   every two minutes, that's over 1000 samples in the averaging\n\
-      \        #   buffer.\n        #\n        now = time.time()\n        for x in\
-      \ input_items[0]:\n            self.fftbuf = np.add(self.fftbuf, x)\n      \
-      \      self.fftcnt += 1\n        \n        #\n        # If time to log, compute\
-      \ the average, then convert to\n        #    10Log10 and apply scaling\n   \
-      \     #\n        if ((now - self.lasttime) > 120):\n            self.lasttime\
-      \ = now\n            fp = open(self.logfile, \"w\")\n            \n        \
-      \    #\n            # Provides protection against (unlikely)\n            #\
-      \  self.fftbuf being 0 after all those adds.\n            #\n            self.fftbuf\
-      \ = np.add(self.fftbuf, 1.0e-14)\n            \n            \n            #\n\
-      \            # Compute (linear) average\n            #\n            self.fftbuf\
-      \ = np.divide(self.fftbuf,self.fftcnt)\n            \n            #\n      \
-      \      # Convert to 10log10\n            #\n            self.fftbuf = np.log10(self.fftbuf)\n\
-      \            self.fftbuf = np.multiply(self.fftbuf,10.0)\n            \n   \
-      \         #\n            # Subtract-out the scale factor\n            #\n  \
-      \          self.fftbuf = np.subtract(self.fftbuf, self.scale)\n            \n\
-      \            for i in range(0,self.fftsize):\n                fp.write(\"%.3f\"\
-      \ % self.fftbuf[i])\n                if (i < self.fftsize-1):\n            \
-      \        fp.write(\",\")\n            fp.write(\"\\n\")\n            self.fftcnt\
-      \ = 0\n            self.fftbuf = np.zeros(self.fftsize,dtype=np.float32)\n \
-      \           fp.close()\n            \n            \n            \n        return\
+      \        self.killctr = 0\n        \n\n    def work(self, input_items, output_items):\n\
+      \        \"\"\"Log output of FFTT\"\"\"\n        #\n        # We keep the FFT\
+      \ power data in the linear domain until\n        #  just before we log it.\n\
+      \        #\n        #\n        # Average-in all the input FFT buffers we've\
+      \ been handed\n        #\n        # We are called at an average rate of 10-20Hz,\
+      \ and with logging\n        #   every two minutes, that's over 1000 samples\
+      \ in the averaging\n        #   buffer.\n        #\n        now = time.time()\n\
+      \        for x in input_items[0]:\n            self.fftbuf = np.add(self.fftbuf,\
+      \ x)\n            self.fftcnt += 1\n            \n        self.killctr += 1\n\
+      \        if (self.killctr >= 10):\n            if (os.path.exists(\"stop.txt\"\
+      )):\n                os.kill(os.getpid(), signal.SIGTERM)\n            self.killctr\
+      \ = 0\n            \n        #\n        # If time to log, compute the average,\
+      \ then convert to\n        #    10Log10 and apply scaling\n        #\n     \
+      \   if ((now - self.lasttime) > 120):\n            self.lasttime = now\n   \
+      \         fp = open(self.logfile, \"w\")\n            \n            #\n    \
+      \        # Provides protection against (unlikely)\n            #  self.fftbuf\
+      \ being 0 after all those adds.\n            #\n            self.fftbuf = np.add(self.fftbuf,\
+      \ 1.0e-14)\n            \n            \n            #\n            # Compute\
+      \ (linear) average\n            #\n            self.fftbuf = np.divide(self.fftbuf,self.fftcnt)\n\
+      \            \n            #\n            # Convert to 10log10\n           \
+      \ #\n            self.fftbuf = np.log10(self.fftbuf)\n            self.fftbuf\
+      \ = np.multiply(self.fftbuf,10.0)\n            \n            #\n           \
+      \ # Subtract-out the scale factor\n            #\n            self.fftbuf =\
+      \ np.subtract(self.fftbuf, self.scale)\n            \n            for i in range(0,self.fftsize):\n\
+      \                fp.write(\"%.3f\" % self.fftbuf[i])\n                if (i\
+      \ < self.fftsize-1):\n                    fp.write(\",\")\n            fp.write(\"\
+      \\n\")\n            self.fftcnt = 0\n            self.fftbuf = np.zeros(self.fftsize,dtype=np.float32)\n\
+      \            fp.close()\n            \n            \n            \n        return\
       \ len(input_items[0])\n"
     affinity: ''
     alias: ''
