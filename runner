@@ -3,7 +3,7 @@ cat >helptmp$$ <<"!EOF!"
 Usage: runner --device <dev> --longitude <long> --decln <dec> --antenna <ant>
     [--srate <rate>] [--frequency <freq>] [--save <savedir>] [--chan <chname>]
     [--temp <tmpdir>] [--threshold <thresh>] [--seconds <secs>]
-    [--fftrate <rate>] [--rundir dir]
+    [--fftrate <rate>] [--rundir dir] ]--ra <special_ra> ] [--dm <special_dm> ]
 !EOF!
 SRATE=10e6
 RFGAIN=30
