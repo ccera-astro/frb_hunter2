@@ -588,7 +588,7 @@ blocks:
       ] = int(self.scount+mxa)\n            evdict[\"sdelay\"] = self.sdelay\n   \
       \         evdict[\"maxdelay\"] = self.sdelay * 16.0 * (1.0/ self.srate)\n  \
       \          wevent = False\n            if (self.ra >= 0.0):\n              \
-      \  if ((abs(self.ra) - self.curd) < 0.3):\n                    wevent = True\n\
+      \  if (abs(self.ra - self.curd) < 0.3):\n                    wevent = True\n\
       \            else:\n                wevent = True\n                \n      \
       \      if (wevent == True):\n                #\n                # Open an \"\
       event\" json file\n                #\n                fp = open (self.prefix+\"\
@@ -623,7 +623,7 @@ blocks:
     tstamp: os.stat(infile).st_mtime
   states:
     _io_cache: ('FRB Pulse Finder', 'blk', [('threshold', '4.0'), ('srate', '6250'),
-      ('tstamp', '1651771829.4881425'), ('seconds', '600'), ('longitude', '-76.108'),
+      ('tstamp', '1652986900.1876867'), ('seconds', '600'), ('longitude', '-76.108'),
       ('declination', '-99.0'), ('prefix', "'./'"), ('sdelay', '0.0'), ('ra', '-1.0')],
       [('0', 'float', 1)], [], 'FRB Pulse finder - a simple multiply const', ['declination',
       'longitude', 'prefix', 'ra', 'sdelay', 'seconds', 'srate', 'threshold', 'tstamp'])
