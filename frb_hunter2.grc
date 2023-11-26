@@ -577,7 +577,7 @@ blocks:
     bw7: '0'
     bw8: '0'
     bw9: '0'
-    clock_source0: ''
+    clock_source0: refsource
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -815,8 +815,8 @@ blocks:
     nchan: '1'
     num_mboards: '1'
     sample_rate: samp_rate
-    sync: sync
-    time_source0: ''
+    sync: none
+    time_source0: timesource
     time_source1: ''
     time_source2: ''
     time_source3: ''
@@ -847,6 +847,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [608, 476.0]
+    rotation: 0
+    state: true
+- name: refsource
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Reference SOurce
+    short_id: ''
+    type: str
+    value: '"internal"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [72, 580.0]
     rotation: 0
     state: true
 - name: rfgain
@@ -916,6 +933,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [240, 468.0]
+    rotation: 0
+    state: true
+- name: timesource
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: PPS Source
+    short_id: ''
+    type: str
+    value: '"internal"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [72, 684.0]
     rotation: 0
     state: true
 - name: virtual_sink_0
