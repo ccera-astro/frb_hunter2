@@ -215,7 +215,6 @@ def build_header_info(fn, fp,source_name,source_ra,source_dec,freq,bw,fbrate,fbs
     write_element_name(fp, etx)
     
     return True
- 
 
 def main():
     #
@@ -228,51 +227,72 @@ def main():
     parser.add_argument("--bandwidth", type=float, help="Bandwidth", required=True)
     parser.add_argument("--decln", type=float, help="Declination", required=True)
     parser.add_argument("--outfile", type=str, help="Output file", required=True)
-    parser.add_argument("--json", type=str, help="Housekeeping JSON file", required=True)
-    parser.add_argument("--offset", type=float, help="Event time offset", default=1.0)
-    parser.add_argument("--fftsize", type=int, help="FFT bins", default=16)
+    parser.add_argument("--json", type=str, help="Housekeeping JSON file", default=None)
+    parser.add_argument("--offset", type=float, help="Event time offset", default=0.0)
+    parser.add_argument("--fftsize", type=int, help="FFT bins", default=32)
+    parser.add_argument("--lmst", type=float, help="LMST of event", default=None)
     
 
     args = parser.parse_args()
     
+    resid = 0.0
     #
     # Load JSON file that contains lots of meaty things
     #
-    jfp = open(args.json, "r")
-    jdict = json.load(jfp)
-    jfp.close()
-    
-    #
-    # Parse the event time:
-    #
-    # YYYY MM DD hh:mm:ss
-    #
-    evtoks = jdict["date"].split()
-    ltp = time.gmtime()
-    
-    tm_year = int(evtoks[0])
-    tm_mon = int(evtoks[1])
-    tm_mday = int(evtoks[2])
-    
-    
-    todtoks = jdict["evtime"].split(":")
-    
-    tm_hour = int(todtoks[0])
-    tm_min = int(todtoks[1])
-    tm_sec = int(float(todtoks[2]))
-    
-    #
-    # Convert into struct_time
-    #
-    ltp = time.struct_time((tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec,
-        0, 0, -1))
-    
-    #
-    # Then interpret it as GMT -- why the "time" module doesn't have this,
-    #  I dunno.
-    #
-    evutime = calendar.timegm(ltp)
-    evutime -= args.offset
+    if (args.json != None):
+        jfp = open(args.json, "r")
+        jdict = json.load(jfp)
+        jfp.close()
+        
+        #
+        # Parse the event time:
+        #
+        # YYYY MM DD hh:mm:ss
+        #
+        evtoks = jdict["date"].split()
+        ltp = time.gmtime()
+        
+        tm_year = int(evtoks[0])
+        tm_mon = int(evtoks[1])
+        tm_mday = int(evtoks[2])
+        
+        
+        todtoks = jdict["evtime"].split(":")
+        
+        tm_hour = int(todtoks[0])
+        tm_min = int(todtoks[1])
+        tm_sec = int(float(todtoks[2]))
+    else:
+        mt = os.stat(args.infile).st_mtime
+        
+        #
+        # Get file size, convert to number of records
+        #
+        sz = os.stat(args.infile).st_size
+        sz /= 4
+        sz /= args.fftsize
+        
+        #
+        # Turn that into time, subtract to derive start time
+        #
+        toff = sz * (1.0 / float(args.srate))
+        mt -= toff
+        evutime = mt
+        
+    if (json != None):
+        #
+        # Convert into struct_time
+        #
+        ltp = time.struct_time((tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec,
+            0, 0, -1))
+        
+        #
+        # Then interpret it as GMT -- why the "time" module doesn't have this,
+        #  I dunno.
+        #
+        evutime = calendar.timegm(ltp)
+        evutime -= args.offset
+        evutime += resid
 
     #
     # Open output file
@@ -286,11 +306,14 @@ def main():
     #   antenna.
     #
     #
-    lmst_toks = jdict["lmst"]
-    lmst_toks = lmst_toks.split(",")
-    lmst = float(lmst_toks[0])
-    lmst += float(lmst_toks[1])/60.0
-    lmst += float(lmst_toks[2])/3600.0
+    if (args.json != None):
+        lmst_toks = jdict["lmst"]
+        lmst_toks = lmst_toks.split(",")
+        lmst = float(lmst_toks[0])
+        lmst += float(lmst_toks[1])/60.0
+        lmst += float(lmst_toks[2])/3600.0
+    else:
+        lmst = args.lmst
     
     #
     # Bring in the input file as 32-bit floats and make into
