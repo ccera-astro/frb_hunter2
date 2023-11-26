@@ -189,8 +189,9 @@ do
         # Call the bulk analyser, which applies de-dispersion, and then
         #  looks for a pulse...
         #
+ 
 		frb_bulk_analyser.py --declination $decln --infile $TMPDIR/$CHAN-frb_tmp.dat --srate $CRATE \
-		  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds $SECS --longitude $LONG
+			  --threshold $THRESH --sdelay $sd --prefix $TMPDIR/$CHAN- --seconds $SECS --longitude $LONG
 		
 		#
 		# Special-attention to a particular RA region, like Tau A

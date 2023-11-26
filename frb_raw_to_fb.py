@@ -230,6 +230,7 @@ def main():
     parser.add_argument("--outfile", type=str, help="Output file", required=True)
     parser.add_argument("--json", type=str, help="Housekeeping JSON file", required=True)
     parser.add_argument("--offset", type=float, help="Event time offset", default=1.0)
+    parser.add_argument("--fftsize", type=int, help="FFT bins", default=16)
     
 
     args = parser.parse_args()
@@ -296,8 +297,8 @@ def main():
     #  1D NUMPY array.
     #
     vals = np.fromfile(args.infile, dtype=np.float32)
-    cols = 16
-    rows = int(len(vals)/16)
+    cols = args.fftsize
+    rows = int(len(vals)/args.fftsize)
 
     #
     # Reshape into 2D
