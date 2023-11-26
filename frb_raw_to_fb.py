@@ -9,8 +9,9 @@ import json
 import argparse
 
     
-def write_fb_header(fn, fp, srate, freq, bandwidth, declination, ra, evu):
-    build_header_info(fn, fp, "???", ra, declination, freq, bandwidth, srate, 16, evu)
+def write_fb_header(fn, fp, srate, freq, bandwidth, declination, ra, evu, sname):
+    sn = "???" if sname == None else sname
+    build_header_info(fn, fp, sn, ra, declination, freq, bandwidth, srate, 16, evu)
    
 #
 # Convert to the weirdness that is the hybrid floating-point
@@ -231,6 +232,7 @@ def main():
     parser.add_argument("--offset", type=float, help="Event time offset", default=0.0)
     parser.add_argument("--fftsize", type=int, help="FFT bins", default=32)
     parser.add_argument("--lmst", type=float, help="LMST of event", default=None)
+    parser.add_argument("--sname", type=str, help="Name of Source", default=None)
     
 
     args = parser.parse_args()
@@ -279,7 +281,7 @@ def main():
         mt -= toff
         evutime = mt
         
-    if (json != None):
+    if (args.json != None):
         #
         # Convert into struct_time
         #
@@ -332,7 +334,8 @@ def main():
     #
     # We have enough for the SIGPROC header
     #
-    write_fb_header(args.outfile, ofp, args.srate, args.freq, args.bandwidth, args.decln, lmst, evutime)
+    write_fb_header(args.outfile, ofp, args.srate, args.freq, args.bandwidth, args.decln, lmst, evutime,
+        args.sname)
 
 
     #

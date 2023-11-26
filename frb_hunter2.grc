@@ -577,7 +577,7 @@ blocks:
     bw7: '0'
     bw8: '0'
     bw9: '0'
-    clock_source0: external
+    clock_source0: ''
     clock_source1: ''
     clock_source2: ''
     clock_source3: ''
@@ -816,7 +816,7 @@ blocks:
     num_mboards: '1'
     sample_rate: samp_rate
     sync: sync
-    time_source0: external
+    time_source0: ''
     time_source1: ''
     time_source2: ''
     time_source3: ''
