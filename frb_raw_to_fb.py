@@ -9,9 +9,9 @@ import json
 import argparse
 
     
-def write_fb_header(fn, fp, srate, freq, bandwidth, declination, ra, evu, sname):
+def write_fb_header(fn, fp, srate, freq, bandwidth, declination, ra, evu, sname, ffts):
     sn = "???" if sname == None else sname
-    build_header_info(fn, fp, sn, ra, declination, freq, bandwidth, srate, 16, evu)
+    build_header_info(fn, fp, sn, ra, declination, freq, bandwidth, srate, ffts, evu)
    
 #
 # Convert to the weirdness that is the hybrid floating-point
@@ -335,7 +335,7 @@ def main():
     # We have enough for the SIGPROC header
     #
     write_fb_header(args.outfile, ofp, args.srate, args.freq, args.bandwidth, args.decln, lmst, evutime,
-        args.sname)
+        args.sname, args.fftsize)
 
 
     #
