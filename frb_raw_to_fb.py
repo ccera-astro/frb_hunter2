@@ -18,11 +18,15 @@ def write_fb_header(fn, fp, srate, freq, bandwidth, declination, ra, evu, sname,
 #  time format used by SIGPROC
 #
 def convert_sigproct(v):
+    sign = 1.0
+    if (v < 0.0):
+        sign = -1.0
+    v = abs(v)
     itime = int(float(v)*3600.0)
     hours = int(itime/3600)
     minutes = int((itime-(hours*3600))/60)
     seconds = itime - (hours*3600) - (minutes*60)
-    timestr="%02d%02d%02d.0" % (hours, minutes, seconds)
+    timestr="%02d%02d%02d.0" % (sign*hours, minutes, seconds)
     return(float(timestr))
 #
 # This will cause a header block to be prepended to the output file
