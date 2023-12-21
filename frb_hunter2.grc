@@ -404,7 +404,7 @@ blocks:
       \ getalpha(corner, srate):\n\tq = math.pow(math.e,-2.0*(corner/srate))\n\talpha\
       \ = 1.0 - q\n\treturn alpha\n\n\ndef write_rate(fn, rate):\n    fp = open(fn,\
       \ \"w\")\n    fp.write(\"%d\\n\" % rate)\n    fp.close()\n    return True\n\n\
-      \ndef compute_crate(fftsize,srate,maxrate):\n    rates = [x for x in range(maxrate,2500,-25)]\n\
+      \ndef compute_crate(fftsize,srate,maxrate):\n    rates = [x for x in range(maxrate,2500,-5)]\n\
       \    for r in rates:\n        d = float(srate)/float(fftsize)\n        d /=\
       \ float(r)\n        \n        if (d == float(int(d))):\n            return r\n\
       \    return 2500\n\n    \n"

@@ -10,7 +10,7 @@ install: frb_hunter2.py frb_bulk_analyser.py
 	cp frb_hunter2.py /usr/local/bin
 	cp frb_bulk_analyser.py /usr/local/bin
 	chmod 755 /usr/local/bin/frb_*.py
-	cp frb_buf_mgr.py /usr/local/bin
+	cp frb_hunter2_frb_buf_mgr.py /usr/local/bin
 	cp pulse_finder_1.py /usr/local/bin
 	cp runner /usr/local/bin
 	cp fft_logger_1.py /usr/local/bin
