@@ -927,32 +927,39 @@ blocks:
       \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
       from gnuradio import gr\nimport pmt\n\n\nclass blk(gr.sync_block):  # other\
       \ base classes are basic_block, decim_block, interp_block\n    \"\"\"Catch the\
-      \ first rx_timestamp\"\"\"\n\n    def __init__(self, rxfile=\"rxfile.txt\"):\
+      \ first rx_timestamp\"\"\"\n\n    def __init__(self, rxfile=\"rxfile.txt\",fftsize=32,crate=2500,srate=25e6):\
       \  # only default arguments here\n        \"\"\"arguments to this function show\
       \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
       \   self,\n            name='rx_time catcher',   # will show up in GRC\n   \
       \         in_sig=[np.complex64],\n            out_sig=None\n        )\n    \
       \    # if an attribute with the same name as a parameter is found,\n       \
       \ # a callback is registered (properties work, too).\n        self.rxfile =\
-      \ rxfile\n        self.first = True\n\n    def work(self, input_items, output_items):\n\
-      \        if (self.first == True):\n            # Get rx_time tag\n         \
-      \   self.first = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
+      \ rxfile\n        self.first = True\n        self.fftrate = srate/fftsize\n\
+      \        self.decim = self.fftrate / crate\n        self.offset = self.fftrate\
+      \ * self.decim\n\n    def work(self, input_items, output_items):\n        if\
+      \ (self.first == True):\n            # Get rx_time tag\n            self.first\
+      \ = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
       \            for tag in tags:\n                key = pmt.to_python(tag.key)\
       \ # convert from PMT to python string\n                value = pmt.to_python(tag.value)\
       \ # Note that the type(value) can be several things, it depends what PMT type\
       \ it was\n                if (key == \"rx_time\"):\n                    break\n\
       \            fp = open(self.rxfile, \"w\")\n            #fp.write(\"%s\" % str(value))\n\
-      \            timestump = float(value[0])+float(value[1])\n            fp.write(\"\
-      %13.7f\\n\" % timestump)\n            fp.close()\n        return len(input_items[0])\n"
+      \            timestump = float(value[0])+float(value[1])\n            timestump\
+      \ += self.offset\n            fp.write(\"%13.7f\\n\" % timestump)\n        \
+      \    fp.close()\n        return len(input_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
+    crate: crate
+    fftsize: '32'
     maxoutbuf: '0'
     minoutbuf: '0'
     rxfile: prefix+"rxfile.txt"
+    srate: samp_rate
   states:
-    _io_cache: ('rx_time catcher', 'blk', [('rxfile', "'rxfile.txt'")], [('0', 'complex',
-      1)], [], 'Catch the first rx_timestamp', ['rxfile'])
+    _io_cache: ('rx_time catcher', 'blk', [('rxfile', "'rxfile.txt'"), ('fftsize',
+      '32'), ('crate', '2500'), ('srate', '25000000.0')], [('0', 'complex', 1)], [],
+      'Catch the first rx_timestamp', ['rxfile'])
     bus_sink: false
     bus_source: false
     bus_structure: null
