@@ -935,7 +935,7 @@ blocks:
       \    # if an attribute with the same name as a parameter is found,\n       \
       \ # a callback is registered (properties work, too).\n        self.rxfile =\
       \ rxfile\n        self.first = True\n        self.fftrate = srate/fftsize\n\
-      \        self.decim = self.fftrate / crate\n        self.offset = self.fftrate\
+      \        self.decim = self.fftrate / crate\n        self.offset = (1.0/self.fftrate)\
       \ * self.decim\n\n    def work(self, input_items, output_items):\n        if\
       \ (self.first == True):\n            # Get rx_time tag\n            self.first\
       \ = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
