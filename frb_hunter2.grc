@@ -198,6 +198,24 @@ blocks:
     coordinate: [1848, 212.0]
     rotation: 0
     state: true
+- name: blocks_keep_one_in_n_2
+  id: blocks_keep_one_in_n
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '20'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [304, 212.0]
+    rotation: 0
+    state: true
 - name: blocks_stream_to_vector_0
   id: blocks_stream_to_vector
   parameters:
@@ -916,15 +934,15 @@ blocks:
       \         in_sig=[np.complex64],\n            out_sig=None\n        )\n    \
       \    # if an attribute with the same name as a parameter is found,\n       \
       \ # a callback is registered (properties work, too).\n        self.rxfile =\
-      \ rxfile\n        self.first = True\n\n    def work(self, input_items, output_items):\n\
-      \        if (self.first == True):\n            # Get rx_time tag\n         \
-      \   self.first = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
+      \ rxfile\n        self.first = True\n\n    def work(self, input_items):\n  \
+      \      if (self.first == True):\n            # Get rx_time tag\n           \
+      \ self.first = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
       \            for tag in tags:\n                key = pmt.to_python(tag.key)\
       \ # convert from PMT to python string\n                value = pmt.to_python(tag.value)\
       \ # Note that the type(value) can be several things, it depends what PMT type\
       \ it was\n                if (key == \"rx_time\"):\n                    break\n\
       \            fp = open(self.rxfile, \"w\")\n            fp.write(\"%s\" % str(value))\n\
-      \            fp.close()\n        return len(output_items[0])\n"
+      \            fp.close()\n        return len(input_times[0])\n"
     affinity: ''
     alias: ''
     comment: ''
@@ -937,7 +955,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [344, 156.0]
+    coordinate: [464, 132.0]
     rotation: 0
     state: true
 - name: seconds
@@ -1084,12 +1102,13 @@ connections:
 - [blocks_head_0, '0', blocks_stream_to_vector_1, '0']
 - [blocks_keep_one_in_n_0, '0', fft_vxx_1, '0']
 - [blocks_keep_one_in_n_1, '0', virtual_sink_0, '0']
+- [blocks_keep_one_in_n_2, '0', rx_time_catcher, '0']
 - [blocks_stream_to_vector_0, '0', blocks_keep_one_in_n_0, '0']
 - [blocks_stream_to_vector_1, '0', fft_vxx_0, '0']
 - [fft_vxx_0, '0', blocks_complex_to_mag_squared_1, '0']
 - [fft_vxx_1, '0', blocks_complex_to_mag_squared_0, '0']
 - [osmosdr_source_0, '0', blocks_head_0, '0']
-- [osmosdr_source_0, '0', rx_time_catcher, '0']
+- [osmosdr_source_0, '0', blocks_keep_one_in_n_2, '0']
 - [single_pole_iir_filter_xx_1, '0', blocks_keep_one_in_n_1, '0']
 - [virtual_source_0_0, '0', blocks_file_sink_0, '0']
 - [virtual_source_0_0, '0', time_catcher, '0']
