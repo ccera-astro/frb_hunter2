@@ -952,6 +952,47 @@ blocks:
     coordinate: [240, 468.0]
     rotation: 0
     state: true
+- name: time_catcher
+  id: epy_block
+  parameters:
+    _source_code: "\"\"\"\nEmbedded Python Blocks:\n\nEach time this file is saved,\
+      \ GRC will instantiate the first class it finds\nto get ports and parameters\
+      \ of your block. The arguments to __init__  will\nbe the parameters. All of\
+      \ them are required to have default values!\n\"\"\"\n\"\"\"\nEmbedded Python\
+      \ Blocks:\n\nEach time this file is saved, GRC will instantiate the first class\
+      \ it finds\nto get ports and parameters of your block. The arguments to __init__\
+      \  will\nbe the parameters. All of them are required to have default values!\n\
+      \"\"\"\n\nimport numpy as np\nfrom gnuradio import gr\nimport time\nimport math\n\
+      from gnuradio.fft import window\nimport os\nimport signal\n\nclass blk(gr.sync_block):\
+      \  # other base classes are basic_block, decim_block, interp_block\n    \"\"\
+      \"Time Catcher\"\"\"\n\n    def __init__(self, fftsize=32,tsfile=\"tsfile.txt\"\
+      ):  # only default arguments here\n        \"\"\"arguments to this function\
+      \ show up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n    \
+      \        self,\n            name='Time Catcher',   # will show up in GRC\n \
+      \           in_sig=[(np.float32,fftsize)],\n            out_sig=None\n     \
+      \   )\n        # if an attribute with the same name as a parameter is found,\n\
+      \        # a callback is registered (properties work, too).\n        self.fftsize\
+      \ = fftsize\n        self.tsfile = tsfile\n        self.first = True\n     \
+      \   \n\n    def work(self, input_items, output_items):\n        \"\"\"Capture\
+      \ timestamp on first record\"\"\"\n        if (self.first == True):\n      \
+      \      fp = open(self.tsfile, \"w\")\n            fp.write(\"%13.6f\\n\" % time.time())\n\
+      \            fp.close()\n            self.first = False\n        return len(input_items[0])\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    fftsize: '32'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tsfile: '''tsfile.txt'''
+  states:
+    _io_cache: ('Time Catcher', 'blk', [('fftsize', '32'), ('tsfile', "'tsfile.txt'")],
+      [('0', 'float', 32)], [], 'Time Catcher', ['fftsize', 'tsfile'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1968, 524.0]
+    rotation: 0
+    state: true
 - name: timesource
   id: parameter
   parameters:
@@ -1010,6 +1051,7 @@ connections:
 - [osmosdr_source_0, '0', blocks_head_0, '0']
 - [single_pole_iir_filter_xx_1, '0', blocks_keep_one_in_n_1, '0']
 - [virtual_source_0_0, '0', blocks_file_sink_0, '0']
+- [virtual_source_0_0, '0', time_catcher, '0']
 
 metadata:
   file_format: 1
