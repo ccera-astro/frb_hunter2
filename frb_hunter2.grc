@@ -924,7 +924,7 @@ blocks:
       \ # Note that the type(value) can be several things, it depends what PMT type\
       \ it was\n                if (key == \"rx_time\"):\n                    break\n\
       \            fp = open(self.rxfile, \"w\")\n            fp.write(\"%d %d\\n\"\
-      \ % (value[1], value[1]))\n        return len(output_items[0])\n"
+      \ % (pmt.car(value), pmt.cdr(value)))\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
