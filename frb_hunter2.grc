@@ -942,8 +942,8 @@ blocks:
       \ # Note that the type(value) can be several things, it depends what PMT type\
       \ it was\n                if (key == \"rx_time\"):\n                    break\n\
       \            fp = open(self.rxfile, \"w\")\n            #fp.write(\"%s\" % str(value))\n\
-      \            fp.write(\"%d.%d\\n\" % (value[0], value[1]))\n            fp.close()\n\
-      \        return len(input_items[0])\n"
+      \            timestump = float(value[0])+float(value[1])\n            fp.write(\"\
+      %13.7f\\n\" % timestump)\n            fp.close()\n        return len(input_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
