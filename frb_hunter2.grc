@@ -949,7 +949,7 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    rxfile: '"rxfile.txt"'
+    rxfile: prefix+"rxfile.txt"
   states:
     _io_cache: ('rx_time catcher', 'blk', [('rxfile', "'rxfile.txt'")], [('0', 'complex',
       1)], [], 'Catch the first rx_timestamp', ['rxfile'])
