@@ -907,24 +907,24 @@ blocks:
       \ GRC will instantiate the first class it finds\nto get ports and parameters\
       \ of your block. The arguments to __init__  will\nbe the parameters. All of\
       \ them are required to have default values!\n\"\"\"\n\nimport numpy as np\n\
-      from gnuradio import gr\n\n\nclass blk(gr.sync_block):  # other base classes\
-      \ are basic_block, decim_block, interp_block\n    \"\"\"Catch the first rx_timestamp\"\
-      \"\"\n\n    def __init__(self, rxfile=\"rxfile.txt\"):  # only default arguments\
-      \ here\n        \"\"\"arguments to this function show up as parameters in GRC\"\
-      \"\"\n        gr.sync_block.__init__(\n            self,\n            name='rx_time\
-      \ catcher',   # will show up in GRC\n            in_sig=[np.complex64],\n  \
-      \          out_sig=None\n        )\n        # if an attribute with the same\
-      \ name as a parameter is found,\n        # a callback is registered (properties\
-      \ work, too).\n        self.rxfile = rxfile\n        self.first = True\n\n \
-      \   def work(self, input_items, output_items):\n        if (self.first == True):\n\
-      \            # Get rx_time tag\n            self.first = False\n           \
-      \ tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n            for\
-      \ tag in tags:\n                key = pmt.to_python(tag.key) # convert from\
-      \ PMT to python string\n                value = pmt.to_python(tag.value) # Note\
-      \ that the type(value) can be several things, it depends what PMT type it was\n\
-      \                if (key == \"rx_time\"):\n                    break\n     \
-      \       fp = open(self.rxfile, \"w\")\n            fp.write(\"%s\\n\" % value)\n\
-      \        return len(output_items[0])\n"
+      from gnuradio import gr\nimport pmt\n\n\nclass blk(gr.sync_block):  # other\
+      \ base classes are basic_block, decim_block, interp_block\n    \"\"\"Catch the\
+      \ first rx_timestamp\"\"\"\n\n    def __init__(self, rxfile=\"rxfile.txt\"):\
+      \  # only default arguments here\n        \"\"\"arguments to this function show\
+      \ up as parameters in GRC\"\"\"\n        gr.sync_block.__init__(\n         \
+      \   self,\n            name='rx_time catcher',   # will show up in GRC\n   \
+      \         in_sig=[np.complex64],\n            out_sig=None\n        )\n    \
+      \    # if an attribute with the same name as a parameter is found,\n       \
+      \ # a callback is registered (properties work, too).\n        self.rxfile =\
+      \ rxfile\n        self.first = True\n\n    def work(self, input_items, output_items):\n\
+      \        if (self.first == True):\n            # Get rx_time tag\n         \
+      \   self.first = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
+      \            for tag in tags:\n                key = pmt.to_python(tag.key)\
+      \ # convert from PMT to python string\n                value = pmt.to_python(tag.value)\
+      \ # Note that the type(value) can be several things, it depends what PMT type\
+      \ it was\n                if (key == \"rx_time\"):\n                    break\n\
+      \            fp = open(self.rxfile, \"w\")\n            fp.write(\"%s\\n\" %\
+      \ value)\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
