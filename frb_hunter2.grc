@@ -923,7 +923,7 @@ blocks:
       \ # convert from PMT to python string\n                value = pmt.to_python(tag.value)\
       \ # Note that the type(value) can be several things, it depends what PMT type\
       \ it was\n                if (key == \"rx_time\"):\n                    break\n\
-      \            fp = open(self.rxfile, \"w\")\n            fp.write(\"%s\" % string(value))\n\
+      \            fp = open(self.rxfile, \"w\")\n            fp.write(\"%s\" % str(value))\n\
       \            fp.close()\n        return len(output_items[0])\n"
     affinity: ''
     alias: ''
