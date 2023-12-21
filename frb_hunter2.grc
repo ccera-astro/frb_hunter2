@@ -934,9 +934,9 @@ blocks:
       \         in_sig=[np.complex64],\n            out_sig=None\n        )\n    \
       \    # if an attribute with the same name as a parameter is found,\n       \
       \ # a callback is registered (properties work, too).\n        self.rxfile =\
-      \ rxfile\n        self.first = True\n\n    def work(self, input_items):\n  \
-      \      if (self.first == True):\n            # Get rx_time tag\n           \
-      \ self.first = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
+      \ rxfile\n        self.first = True\n\n    def work(self, input_items, output_items):\n\
+      \        if (self.first == True):\n            # Get rx_time tag\n         \
+      \   self.first = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
       \            for tag in tags:\n                key = pmt.to_python(tag.key)\
       \ # convert from PMT to python string\n                value = pmt.to_python(tag.value)\
       \ # Note that the type(value) can be several things, it depends what PMT type\
