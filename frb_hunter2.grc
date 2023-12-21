@@ -206,14 +206,14 @@ blocks:
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    n: '20'
+    n: '50'
     type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [304, 212.0]
+    coordinate: [464, 308.0]
     rotation: 0
     state: true
 - name: blocks_stream_to_vector_0
@@ -941,8 +941,9 @@ blocks:
       \ # convert from PMT to python string\n                value = pmt.to_python(tag.value)\
       \ # Note that the type(value) can be several things, it depends what PMT type\
       \ it was\n                if (key == \"rx_time\"):\n                    break\n\
-      \            fp = open(self.rxfile, \"w\")\n            fp.write(\"%s\" % str(value))\n\
-      \            fp.close()\n        return len(input_items[0])\n"
+      \            fp = open(self.rxfile, \"w\")\n            #fp.write(\"%s\" % str(value))\n\
+      \            fp.write(\"%d.%d\\n\" % (value[0], value[1]))\n            fp.close()\n\
+      \        return len(input_items[0])\n"
     affinity: ''
     alias: ''
     comment: ''
@@ -955,7 +956,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [464, 132.0]
+    coordinate: [776, 308.0]
     rotation: 0
     state: true
 - name: seconds
