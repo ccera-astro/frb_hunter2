@@ -237,6 +237,7 @@ def main():
     parser.add_argument("--fftsize", type=int, help="FFT bins", default=32)
     parser.add_argument("--lmst", type=float, help="LMST of event", default=None)
     parser.add_argument("--sname", type=str, help="Name of Source", default=None)
+    parser.add_argument("--tstamp", type=float, help="Timestamp input", default=None)
     
 
     args = parser.parse_args()
@@ -284,6 +285,9 @@ def main():
         toff = sz * (1.0 / float(args.srate))
         mt -= toff
         evutime = mt
+        
+        if (args.tstamp != None):
+            evutime = args.tstamp
         
     if (args.json != None):
         #

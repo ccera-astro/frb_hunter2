@@ -980,10 +980,10 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    fftsize: '32'
+    fftsize: fftsize
     maxoutbuf: '0'
     minoutbuf: '0'
-    tsfile: '''tsfile.txt'''
+    tsfile: prefix+'tsfile.txt'
   states:
     _io_cache: ('Time Catcher', 'blk', [('fftsize', '32'), ('tsfile', "'tsfile.txt'")],
       [('0', 'float', 32)], [], 'Time Catcher', ['fftsize', 'tsfile'])
