@@ -934,16 +934,21 @@ blocks:
       \         in_sig=[np.complex64],\n            out_sig=None\n        )\n    \
       \    # if an attribute with the same name as a parameter is found,\n       \
       \ # a callback is registered (properties work, too).\n        self.rxfile =\
-      \ rxfile\n        self.first = True\n        self.fftrate = srate/fftsize\n\
-      \        self.decim = self.fftrate / crate\n        self.offset = (1.0/self.fftrate)\
-      \ * self.decim\n\n    def work(self, input_items, output_items):\n        if\
-      \ (self.first == True):\n            # Get rx_time tag\n            self.first\
-      \ = False\n            tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n\
-      \            for tag in tags:\n                key = pmt.to_python(tag.key)\
-      \ # convert from PMT to python string\n                value = pmt.to_python(tag.value)\
-      \ # Note that the type(value) can be several things, it depends what PMT type\
-      \ it was\n                if (key == \"rx_time\"):\n                    break\n\
-      \            fp = open(self.rxfile, \"w\")\n            #fp.write(\"%s\" % str(value))\n\
+      \ rxfile\n        self.first = True\n        \n        #\n        # FFT outputs\
+      \ occur at srate/fftsize\n        #\n        self.fftrate = srate/fftsize\n\
+      \        \n        #\n        # This is then decimated at \"self.decim\" to\
+      \ produce the actual outputs\n        #\n        self.decim = self.fftrate /\
+      \ crate\n        \n        #\n        # Which means the first output sample\
+      \ is produced at a time that is\n        #  offset from the first input sample\n\
+      \        #\n        self.offset = (1.0/self.fftrate) * self.decim\n\n    def\
+      \ work(self, input_items, output_items):\n        if (self.first == True):\n\
+      \            # Get rx_time tag\n            self.first = False\n           \
+      \ tags = self.get_tags_in_window(0, 0, len(input_items[0]))\n            for\
+      \ tag in tags:\n                key = pmt.to_python(tag.key) # convert from\
+      \ PMT to python string\n                value = pmt.to_python(tag.value) # Note\
+      \ that the type(value) can be several things, it depends what PMT type it was\n\
+      \                if (key == \"rx_time\"):\n                    break\n     \
+      \       fp = open(self.rxfile, \"w\")\n            #fp.write(\"%s\" % str(value))\n\
       \            timestump = float(value[0])+float(value[1])\n            timestump\
       \ += self.offset\n            fp.write(\"%13.7f\\n\" % timestump)\n        \
       \    fp.close()\n        return len(input_items[0])\n"
