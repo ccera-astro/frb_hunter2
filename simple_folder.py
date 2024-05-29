@@ -1,0 +1,143 @@
+#!/usr/bin/python3
+import numpy
+import os
+import time
+import sys
+import argparse
+import math
+import random
+
+MET = 0.0
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--srate", type=float, default=3125, help="Input sample rate")
+parser.add_argument("--width", type=int, default=32, help="Input FFT width")
+parser.add_argument("--p0", type=float, default=0.714525, help="Input pulse period")
+parser.add_argument("--tbins", type=int, default=256, help="Output phase bins")
+parser.add_argument("--median", type=int, default=5, help="Median filter width")
+parser.add_argument("--infile", type=str, help="Input filename", required=True)
+parser.add_argument("--trim", type=float, help="Trim length in seconds", default=0.0)
+parser.add_argument("--verbose", action="store_true", default=False)
+parser.add_argument("--outfile", type=str, help="Output filename", required=True)
+parser.add_argument("--sigma", type=float, help="De-noise sigma threshold", default=3.5)
+
+args = parser.parse_args()
+
+#
+# Pull in data as if it's a 1D array of float32
+#
+inarray = numpy.fromfile(args.infile, dtype=numpy.float32)
+
+#
+# Reshape into a 2D array arranged by FFT width
+#
+inarray = inarray.reshape((-1,args.width))
+
+#
+# Do a sum on each row
+#
+# Traditionally, we'd apply de-dispersion here, but for 21cm over modest
+#  bandwidths, that's not necessary.
+#
+timeseries = numpy.sum(inarray,axis=1)
+if (args.verbose):
+    print ("Input contains %d seconds of data" % (len(timeseries)/args.srate))
+
+if (args.trim > 0.0):
+    samples = args.trim * args.srate
+    samples = int(samples)
+    timeseries=timeseries[samples:-samples]
+
+#
+# Eliminate pesky large spikes, which are likely RFI
+#   
+nreplace = 0
+
+#
+# First compute mean and STD
+#
+mean = numpy.mean(timeseries)
+std = numpy.std(timeseries)
+
+if (args.verbose):
+	print ("std %f mean %f" % (std, mean))
+
+#
+# Perform replacement with numpy magic
+#
+nreplace=len(timeseries[timeseries>(mean+(args.sigma*std))])
+timeseries[timeseries>(mean+(args.sigma*std))] = mean
+
+if (args.verbose):
+    print ("nreplace %d (%f %%)" % (nreplace, 100.0*(float(nreplace)/len(timeseries))))
+    
+#
+# If also doing median filtering...
+#
+if (args.median > 0):
+    #
+    # Reshape back into a 2D array
+    #
+    timeseries = timeseries.reshape((-1,args.median))
+
+    #
+    # Compute median on each row, producing a new
+    #   median-filtered time series
+    #
+    timeseries = numpy.median(timeseries,axis=1)
+
+#
+# Construct empty phase-bin output array
+#
+bins = numpy.zeros(args.tbins)
+bcounts = numpy.zeros(args.tbins)
+
+#
+# Time increment for incoming samples
+#
+mincr = 1.0/args.srate
+if (args.median > 0):
+    mincr = 1.0/(args.srate/args.median)
+
+#
+# Initialize Mission Elapsed Timer
+#
+MET = 0.0
+
+#
+# Compute bin width
+#
+tbinw = args.p0 / float(args.tbins)
+
+#
+# Place time series into phase bins
+#
+for v in timeseries:
+    
+    #
+    # Compute which phase bin for this sample
+    #
+    which = MET / (tbinw)
+    which = int(which) % args.tbins
+    
+    #
+    # Place sample in that phase bin
+    # Increment count
+    #
+    bins[which] += v
+    bcounts[which] += 1
+    
+    #
+    # Increment Mission Elapsed Timer by sample time
+    #
+    MET += mincr
+
+#
+# Print all the phase bins
+#
+reduced = numpy.divide(bins,bcounts)
+reduced = numpy.divide(reduced, min(reduced))
+fp = open(args.outfile, "w")
+for i in range(len(bins)):
+	fp.write("%f %13.8f\n" % ((i*tbinw)/args.p0, reduced[i]))
+fp.close()
