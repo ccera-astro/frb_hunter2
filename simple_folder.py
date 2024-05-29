@@ -20,6 +20,8 @@ parser.add_argument("--trim", type=float, help="Trim length in seconds", default
 parser.add_argument("--verbose", action="store_true", default=False)
 parser.add_argument("--outfile", type=str, help="Output filename", required=True)
 parser.add_argument("--sigma", type=float, help="De-noise sigma threshold", default=3.5)
+parser.add_argument("--ltrim", type=float, help="Lower trim value (secs)", default=0.0)
+parser.add_argument("--utrim", type=float, help="Upper trim value (secs)", default=0.0)
 
 args = parser.parse_args()
 
@@ -48,6 +50,15 @@ if (args.trim > 0.0):
     samples = int(samples)
     timeseries=timeseries[samples:-samples]
 
+ltrimsamps = int(args.ltrim * args.srate)
+utrimsamps = int(args.utrim * args.srate)
+
+if (utrimsamps > 0 and ltrimsamps > 0):
+    timeseries = timeseries[ltrimsamps:-utrimsamps]
+
+if (args.verbose):
+    print ("After trim, timeseries contains %d seconds of data" % (len(timeseries)/args.srate))
+
 #
 # Eliminate pesky large spikes, which are likely RFI
 #   
@@ -60,7 +71,7 @@ mean = numpy.mean(timeseries)
 std = numpy.std(timeseries)
 
 if (args.verbose):
-	print ("std %f mean %f" % (std, mean))
+    print ("std %f mean %f" % (std, mean))
 
 #
 # Perform replacement with numpy magic
@@ -141,5 +152,5 @@ reduced = numpy.divide(bins,bcounts)
 reduced = numpy.divide(reduced, min(reduced))
 fp = open(args.outfile, "w")
 for i in range(len(bins)):
-	fp.write("%f %13.8f\n" % ((i*tbinw)/args.p0, reduced[i]))
+    fp.write("%f %13.8f\n" % ((i*tbinw)/args.p0, reduced[i]))
 fp.close()
