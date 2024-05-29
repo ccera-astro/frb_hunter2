@@ -65,8 +65,10 @@ if (args.verbose):
 #
 # Perform replacement with numpy magic
 #
-nreplace=len(timeseries[timeseries>(mean+(args.sigma*std))])
+nreplace = len(timeseries[timeseries>(mean+(args.sigma*std))])
+nreplace += len(timeseries[timeseries<(mean-(args.sigma*std))])
 timeseries[timeseries>(mean+(args.sigma*std))] = mean
+timeseries[timeseries<(mean-(args.sigma*std))] = mean
 
 if (args.verbose):
     print ("nreplace %d (%f %%)" % (nreplace, 100.0*(float(nreplace)/len(timeseries))))
