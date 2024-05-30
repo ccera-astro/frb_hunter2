@@ -22,8 +22,49 @@ parser.add_argument("--outfile", type=str, help="Output filename", required=True
 parser.add_argument("--sigma", type=float, help="De-noise sigma threshold", default=3.5)
 parser.add_argument("--ltrim", type=float, help="Lower trim value (secs)", default=0.0)
 parser.add_argument("--utrim", type=float, help="Upper trim value (secs)", default=0.0)
+parser.add_argument("--dmsmear", type=float, help="Max DM-based smear time in seconds", default=0.0)
+
+    
 
 args = parser.parse_args()
+
+#
+# Compute parameters we'll require to roll the columns, based on
+#  smear time.
+#
+if (args.dmsmear > 0.0):
+    
+    #
+    # Convert smear time into number of samples at input srate
+    #
+    dmsamps = args.dmsmear / (1.0 / args.srate)
+    dmsamps = round(dmsamps)
+    if (args.verbose):
+        print ("dmsamps %d" % dmsamps)
+        
+    #
+    # We create a "prebuf" that is as long as the maximum number of samples
+    #  in the smear time
+    #
+    prebuf = numpy.zeros((int(dmsamps),args.width))
+
+    #
+    # Compute the offsets/delays/roll-amounts, based on
+    #  number of samples, starting at highest, and decreasing
+    #  by dmsamps/args.width each time
+    #
+    dmoffsets = []
+    a = dmsamps
+    for i in range(args.width):
+        dmoffsets.append(round(a))
+        a -= float(dmsamps)/float(args.width)
+    
+    #
+    # Then flip it
+    #
+    dmoffsets = numpy.flip(numpy.array(dmoffsets))
+    if (args.verbose):
+        print ("dmoffsets: %s" % str(dmoffsets))
 
 #
 # Pull in data as if it's a 1D array of float32
@@ -35,6 +76,17 @@ inarray = numpy.fromfile(args.infile, dtype=numpy.float32)
 #
 inarray = inarray.reshape((-1,args.width))
 
+#
+# Prepend some extra zeros if we're de-dispersing, then roll the columns
+#  appropriately...
+#
+if (args.dmsmear > 0.0):
+    newarray = numpy.concatenate((prebuf,inarray))
+    inarray = newarray
+    cols = [x for x in range(args.width)]
+    dirn = dmoffsets
+    n = inarray.shape[0]
+    inarray[:,cols] = inarray[numpy.mod(numpy.arange(n)[:,None] + dirn,n),cols]
 #
 # Do a sum on each row
 #
