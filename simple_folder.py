@@ -105,14 +105,14 @@ if (dmsmear > 0.0):
     newarray = numpy.concatenate((prebuf,inarray))
     inarray = newarray
     cols = [x for x in range(args.width)]
-    dirn = dmoffsets
+    dirn = numpy.multiply(dmoffsets, -1)
+    if (args.verbose):
+        print ("dirn %s" % str(dirn))
     n = inarray.shape[0]
     inarray[:,cols] = inarray[numpy.mod(numpy.arange(n)[:,None] + dirn,n),cols]
 #
 # Do a sum on each row
 #
-# Traditionally, we'd apply de-dispersion here, but for 21cm over modest
-#  bandwidths, that's not necessary.
 #
 timeseries = numpy.sum(inarray,axis=1)
 if (args.verbose):
