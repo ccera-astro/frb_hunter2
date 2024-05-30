@@ -7,6 +7,18 @@ import argparse
 import math
 import random
 
+#
+# Compute total smear time from basic observing and pulsar parameters
+#
+def compute_smear(fc,bw,dm):
+        
+    bw /= 1.0e6
+    fc /= 1.0e9
+
+    usec = 8.3 * bw * dm * (fc**-3.0)
+    return (usec/1.0e6)
+
+
 MET = 0.0
 
 parser = argparse.ArgumentParser()
@@ -23,6 +35,9 @@ parser.add_argument("--sigma", type=float, help="De-noise sigma threshold", defa
 parser.add_argument("--ltrim", type=float, help="Lower trim value (secs)", default=0.0)
 parser.add_argument("--utrim", type=float, help="Upper trim value (secs)", default=0.0)
 parser.add_argument("--dmsmear", type=float, help="Max DM-based smear time in seconds", default=0.0)
+parser.add_argument("--dm", type=float, help="DM of observation", default=0.0)
+parser.add_argument("--freq", type=float, help="Center frequency of observation", default=0.0)
+parser.add_argument("--bw", type=float, help="Bandwidth", default=0.0)
 
     
 
@@ -32,12 +47,18 @@ args = parser.parse_args()
 # Compute parameters we'll require to roll the columns, based on
 #  smear time.
 #
-if (args.dmsmear > 0.0):
+dmsmear = 0.0
+if (args.dmsmear > 0.0 or (args.dm > 0.0 and args.freq > 0.0 and args.bw > 0.0)):
     
+    dmsmear = args.dmsmear
+    if (args.dm > 0.0):
+        dmsmear = compute_smear(args.freq, args.bw, args.dm)
+        if (args.verbose):
+            print ("Computed smear time of %f secs" % dmsmear)
     #
     # Convert smear time into number of samples at input srate
     #
-    dmsamps = args.dmsmear / (1.0 / args.srate)
+    dmsamps = dmsmear / (1.0 / args.srate)
     dmsamps = round(dmsamps)
     if (args.verbose):
         print ("dmsamps %d" % dmsamps)
@@ -80,7 +101,7 @@ inarray = inarray.reshape((-1,args.width))
 # Prepend some extra zeros if we're de-dispersing, then roll the columns
 #  appropriately...
 #
-if (args.dmsmear > 0.0):
+if (dmsmear > 0.0):
     newarray = numpy.concatenate((prebuf,inarray))
     inarray = newarray
     cols = [x for x in range(args.width)]
@@ -102,11 +123,17 @@ if (args.trim > 0.0):
     samples = int(samples)
     timeseries=timeseries[samples:-samples]
 
+#
+# Do unbalanced edge-trim (creating a kind of "window")
+#
 ltrimsamps = int(args.ltrim * args.srate)
 utrimsamps = int(args.utrim * args.srate)
 
-if (utrimsamps > 0 and ltrimsamps > 0):
-    timeseries = timeseries[ltrimsamps:-utrimsamps]
+if (utrimsamps > 0 or ltrimsamps > 0):
+    if (utrimsamps > 0):
+        timeseries = timeseries[ltrimsamps:-utrimsamps]
+    else:
+        timeseries = timeseries[ltrimsamps:]
 
 if (args.verbose):
     print ("After trim, timeseries contains %d seconds of data" % (len(timeseries)/args.srate))
