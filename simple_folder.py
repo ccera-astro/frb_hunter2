@@ -102,8 +102,6 @@ inarray = inarray.reshape((-1,args.width))
 #  appropriately...
 #
 if (dmsmear > 0.0):
-    newarray = numpy.concatenate((prebuf,inarray))
-    inarray = newarray
     cols = [x for x in range(args.width)]
     dirn = numpy.multiply(dmoffsets, -1)
     if (args.verbose):
