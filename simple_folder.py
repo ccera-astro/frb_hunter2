@@ -39,6 +39,9 @@ parser.add_argument("--dm", type=float, help="DM of observation", default=0.0)
 parser.add_argument("--freq", type=float, help="Center frequency of observation", default=0.0)
 parser.add_argument("--bw", type=float, help="Bandwidth", default=0.0)
 parser.add_argument("--hpass", action="store_true", default=False)
+parser.add_argument("--halpha", type=float, help="Alpha value for high-pass", default=0.01)
+parser.add_argument("--mpass", action="store_true", help="Enable mid-pass filter", default=False)
+parser.add_argument("--malpha", type=float, help="Alpha value for mid-pass", default=0.3)
 
     
 
@@ -204,8 +207,11 @@ tbinw = args.p0 / float(args.tbins)
 # Place time series into phase bins
 #
 lpass = timeseries[0]
-alpha = 0.001
+mpass = timeseries[0]
+alpha = args.halpha
 beta = 1.0 - alpha
+malpha = 0.3
+mbeta = 1.0 - malpha
 for v in timeseries:
     
     if (args.hpass):
@@ -213,6 +219,10 @@ for v in timeseries:
         fv = v - (0.95*lpass)
     else:
         fv = v
+    
+    if (args.mpass):
+        mpass = fv * malpha + mbeta * mpass
+        fv = mpass
     #fv = v
     #
     # Compute which phase bin for this sample
