@@ -38,6 +38,7 @@ parser.add_argument("--dmsmear", type=float, help="Max DM-based smear time in se
 parser.add_argument("--dm", type=float, help="DM of observation", default=0.0)
 parser.add_argument("--freq", type=float, help="Center frequency of observation", default=0.0)
 parser.add_argument("--bw", type=float, help="Bandwidth", default=0.0)
+parser.add_argument("--hpass", action="store_true", default=False)
 
     
 
@@ -202,8 +203,17 @@ tbinw = args.p0 / float(args.tbins)
 #
 # Place time series into phase bins
 #
+lpass = timeseries[0]
+alpha = 0.001
+beta = 1.0 - alpha
 for v in timeseries:
     
+    if (args.hpass):
+        lpass = alpha*v + beta*lpass
+        fv = v - (0.95*lpass)
+    else:
+        fv = v
+    #fv = v
     #
     # Compute which phase bin for this sample
     #
@@ -214,7 +224,7 @@ for v in timeseries:
     # Place sample in that phase bin
     # Increment count
     #
-    bins[which] += v
+    bins[which] += fv
     bcounts[which] += 1
     
     #
@@ -227,7 +237,9 @@ for v in timeseries:
 #
 reduced = numpy.divide(bins,bcounts)
 reduced = numpy.divide(reduced, min(reduced))
+std = numpy.std(reduced)
+mean = numpy.mean(reduced)
 fp = open(args.outfile, "w")
 for i in range(len(bins)):
-    fp.write("%f %13.8f\n" % ((i*tbinw)/args.p0, reduced[i]))
+    fp.write("%f %13.8f\n" % ((i*tbinw)/args.p0, (reduced[i]-mean)/std))
 fp.close()
